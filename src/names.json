@@ -1,0 +1,450 @@
+{
+ "attribute": {
+  "0": {
+   "de": "Schnellwirkung",
+   "en": "Fast Casting"
+  },
+  "1": {
+   "de": "Illusionsmagie",
+   "en": "Illusion Magic"
+  },
+  "2": {
+   "de": "Beherrschungsmagie",
+   "en": "Domination Magic"
+  },
+  "3": {
+   "de": "Inspirationsmagie",
+   "en": "Inspiration Magic"
+  },
+  "4": {
+   "de": "Blutmagie",
+   "en": "Blood Magic"
+  },
+  "5": {
+   "de": "Todesmagie",
+   "en": "Death Magic"
+  },
+  "6": {
+   "de": "Seelensammlung",
+   "en": "Soul Reaping"
+  },
+  "7": {
+   "de": "Flüche",
+   "en": "Curses"
+  },
+  "8": {
+   "de": "Luftmagie",
+   "en": "Air Magic"
+  },
+  "9": {
+   "de": "Erdmagie",
+   "en": "Earth Magic"
+  },
+  "10": {
+   "de": "Feuermagie",
+   "en": "Fire Magic"
+  },
+  "11": {
+   "de": "Wassermagie",
+   "en": "Water Magic"
+  },
+  "12": {
+   "de": "Energiespeicherung",
+   "en": "Energy Storage"
+  },
+  "13": {
+   "de": "Heilgebete",
+   "en": "Healing Prayers"
+  },
+  "14": {
+   "de": "Peinigungsgebete",
+   "en": "Smiting Prayers"
+  },
+  "15": {
+   "de": "Schutzgebete",
+   "en": "Protection Prayers"
+  },
+  "16": {
+   "de": "Gunst der Götter",
+   "en": "Divine Favor"
+  },
+  "17": {
+   "de": "Stärke",
+   "en": "Strength"
+  },
+  "18": {
+   "de": "Axtbeherrschung",
+   "en": "Axe Mastery"
+  },
+  "19": {
+   "de": "Hammerbeherrschung",
+   "en": "Hammer Mastery"
+  },
+  "20": {
+   "de": "Schwertkunst",
+   "en": "Swordsmanship"
+  },
+  "21": {
+   "de": "Taktik",
+   "en": "Tactics"
+  },
+  "22": {
+   "de": "Tierbeherrschung",
+   "en": "Beast Mastery"
+  },
+  "23": {
+   "de": "Fachkenntnis",
+   "en": "Expertise"
+  },
+  "24": {
+   "de": "Überleben in der Wildnis",
+   "en": "Wilderness Survival"
+  },
+  "25": {
+   "de": "Treffsicherheit",
+   "en": "Marksmanship"
+  },
+  "29": {
+   "de": "Dolchbeherrschung",
+   "en": "Dagger Mastery"
+  },
+  "30": {
+   "de": "Tödliche Künste",
+   "en": "Deadly Arts"
+  },
+  "31": {
+   "de": "Schattenkünste",
+   "en": "Shadow Arts"
+  },
+  "32": {
+   "de": "Zwiesprache",
+   "en": "Communing"
+  },
+  "33": {
+   "de": "Wiederherstellungsmagie",
+   "en": "Restoration Magic"
+  },
+  "34": {
+   "de": "Kanalisierungsmagie",
+   "en": "Channeling Magic"
+  },
+  "35": {
+   "de": "Kritische Stöße",
+   "en": "Critical Strikes"
+  },
+  "36": {
+   "de": "Macht des Herbeirufens",
+   "en": "Spawning Power"
+  },
+  "37": {
+   "de": "Speerbeherrschung",
+   "en": "Spear Mastery"
+  },
+  "38": {
+   "de": "Befehlsgewalt",
+   "en": "Command"
+  },
+  "39": {
+   "de": "Motivation",
+   "en": "Motivation"
+  },
+  "40": {
+   "de": "Führung",
+   "en": "Leadership"
+  },
+  "41": {
+   "de": "Sensenbeherrschung",
+   "en": "Scythe Mastery"
+  },
+  "42": {
+   "de": "Windgebete",
+   "en": "Wind Prayers"
+  },
+  "43": {
+   "de": "Erdgebete",
+   "en": "Earth Prayers"
+  },
+  "44": {
+   "de": "Mystik",
+   "en": "Mysticism"
+  },
+  "905": {
+   "de": "Freund der Kurzick",
+   "en": "Friend of the Kurzicks Title Track"
+  },
+  "906": {
+   "de": "Freund der Luxon",
+   "en": "Friend of the Luxons Title Track"
+  },
+  "917": {
+   "de": "Sonnenspeertitel",
+   "en": "Sunspear Title Track"
+  },
+  "920": {
+   "de": "Lichtbringertitel",
+   "en": "Lightbringer Title Track"
+  },
+  "938": {
+   "de": "Asuratitel",
+   "en": "Asura Title Track"
+  },
+  "939": {
+   "de": "Deldrimortitel",
+   "en": "Deldrimor Title Track"
+  },
+  "940": {
+   "de": "Ebon-Vorhut-Titel",
+   "en": "Ebon Vanguard Title Track"
+  },
+  "941": {
+   "de": "Norntitel",
+   "en": "Norn Title Track"
+  },
+  "-1": {
+   "de": "Kein Attribut",
+   "en": "No Attribute"
+  }
+ },
+ "profession": {
+  "0": {
+   "de": "keine",
+   "en": "none"
+  },
+  "1": {
+   "de": "Krieger",
+   "en": "Warrior"
+  },
+  "2": {
+   "de": "Waldläufer",
+   "en": "Ranger"
+  },
+  "3": {
+   "de": "Mönch",
+   "en": "Monk"
+  },
+  "4": {
+   "de": "Nekromant",
+   "en": "Necromancer"
+  },
+  "5": {
+   "de": "Mesmer",
+   "en": "Mesmer"
+  },
+  "6": {
+   "de": "Elementarmagier",
+   "en": "Elementalist"
+  },
+  "7": {
+   "de": "Assassine",
+   "en": "Assassin"
+  },
+  "8": {
+   "de": "Ritualist",
+   "en": "Ritualist"
+  },
+  "9": {
+   "de": "Paragon",
+   "en": "Paragon"
+  },
+  "10": {
+   "de": "Derwisch",
+   "en": "Dervish"
+  }
+ },
+ "type": {
+  "1": {
+   "de": "Fertigkeit",
+   "en": "Skill"
+  },
+  "2": {
+   "de": "Bogenangriff",
+   "en": "Bow Attack"
+  },
+  "3": {
+   "de": "Nahkampfangriff",
+   "en": "Melee Attack"
+  },
+  "4": {
+   "de": "Axtangriff",
+   "en": "Axe Attack"
+  },
+  "5": {
+   "de": "Leithandangriff",
+   "en": "Lead Attack"
+  },
+  "6": {
+   "de": "Begleithandangriff",
+   "en": "Off-Hand Attack"
+  },
+  "7": {
+   "de": "Doppelangriff",
+   "en": "Dual Attack"
+  },
+  "8": {
+   "de": "Hammerangriff",
+   "en": "Hammer Attack"
+  },
+  "9": {
+   "de": "Sensenangriff",
+   "en": "Scythe Attack"
+  },
+  "10": {
+   "de": "Schwertangriff",
+   "en": "Sword Attack"
+  },
+  "11": {
+   "de": "Tiergefährtenangriff",
+   "en": "Pet Attack"
+  },
+  "12": {
+   "de": "Speerangriff",
+   "en": "Spear Attack"
+  },
+  "13": {
+   "de": "Anfeuerungsruf",
+   "en": "Chant"
+  },
+  "14": {
+   "de": "Echo",
+   "en": "Echo"
+  },
+  "15": {
+   "de": "Form",
+   "en": "Form"
+  },
+  "16": {
+   "de": "Glyphe",
+   "en": "Glyph"
+  },
+  "17": {
+   "de": "Vorbereitung",
+   "en": "Preparation"
+  },
+  "18": {
+   "de": "Binderitual",
+   "en": "Binding Ritual"
+  },
+  "19": {
+   "de": "Naturritual",
+   "en": "Nature Ritual"
+  },
+  "20": {
+   "de": "Schrei",
+   "en": "Shout"
+  },
+  "21": {
+   "de": "Siegel",
+   "en": "Signet"
+  },
+  "22": {
+   "de": "Zauber",
+   "en": "Spell"
+  },
+  "23": {
+   "de": "Verzauberung",
+   "en": "Enchantment Spell"
+  },
+  "24": {
+   "de": "Verhexung",
+   "en": "Hex Spell"
+  },
+  "25": {
+   "de": "Gegenstandszauber",
+   "en": "Item Spell"
+  },
+  "26": {
+   "de": "Abwehrzauber",
+   "en": "Ward Spell"
+  },
+  "27": {
+   "de": "Waffenzauber",
+   "en": "Weapon Spell"
+  },
+  "28": {
+   "de": "Brunnenzauber",
+   "en": "Well Spell"
+  },
+  "29": {
+   "de": "Haltung",
+   "en": "Stance"
+  },
+  "30": {
+   "de": "Falle",
+   "en": "Trap"
+  },
+  "31": {
+   "de": "Distanzangriff",
+   "en": "Ranged Attack"
+  },
+  "32": {
+   "de": "Ebon-Vorhut-Ritual",
+   "en": "Ebon Vanguard Ritual"
+  },
+  "33": {
+   "de": "Blitzverzauberung",
+   "en": "Flash Enchantment Spell"
+  },
+  "34": {
+   "de": "Angriffsfertigkeit",
+   "en": "Attack Skill"
+  },
+  "35": {
+   "de": "Dolchangriff",
+   "en": "Dagger Attack"
+  },
+  "36": {
+   "de": "Ritual",
+   "en": "Ritual"
+  },
+  "37": {
+   "de": "Doppelverzauberung",
+   "en": "Double Enchantment"
+  },
+  "38": {
+   "de": "Berührungsfertigkeit",
+   "en": "Touch Skill"
+  },
+  "39": {
+   "de": "Berührungszauber",
+   "en": "Touch Spell"
+  },
+  "40": {
+   "de": "Berührungsverzauberung",
+   "en": "Touch Enchantment Spell"
+  },
+  "41": {
+   "de": "Berührungsverhexung",
+   "en": "Touch Hex Spell"
+  },
+  "42": {
+   "de": "Berührungssiegel",
+   "en": "Touch Signet"
+  },
+  "-1": {
+   "de": "Keine Fertigkeit",
+   "en": "No Skill"
+  }
+ },
+ "campaign": {
+  "0": {
+   "de": "Basis",
+   "en": "Core"
+  },
+  "1": {
+   "de": "Prophecies",
+   "en": "Prophecies"
+  },
+  "2": {
+   "de": "Factions",
+   "en": "Factions"
+  },
+  "3": {
+   "de": "Nightfall",
+   "en": "Nightfall"
+  },
+  "4": {
+   "de": "Eye of the North",
+   "en": "Eye of the North"
+  }
+ }
+}

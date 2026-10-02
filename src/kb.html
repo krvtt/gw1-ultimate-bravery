@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zaishen Ultimate Bravery – Knowledge Base</title>
+<style>
+:root{
+  --bg:#0d0b09; --bg2:#12100d; --surface:#171410; --surface2:#1e1a15; --raise:#252019; --line:#2d271f; --line2:#3a3228;
+  --text:#ece4d4; --text2:#c9bda7; --muted:#8f836e; --gold:#c9a45c; --gold2:#e6cd93; --gold-dim:rgba(201,164,92,.14);
+  --warn:#e0a25b; --bad:#df6247; --ok:#7fbf7a; --info:#86c3de;
+  --r:14px; --r2:10px; --r3:7px;
+  --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+  --sans:"Inter","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Mono",Consolas,ui-monospace,monospace;
+  --W:#d9b35a; --R:#8fbf5a; --Mo:#86c3de; --N:#4fae88; --Me:#b07ad1; --E:#df6247; --A:#cf6c98; --Rt:#56bcc0; --P:#e0a24a; --D:#a4acd8; --X:#a99e8a;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f4efe6; --bg2:#efe8dc; --surface:#fffdf9; --surface2:#f7f1e7; --raise:#efe6d6; --line:#e2d8c6; --line2:#d3c6ae;
+  --text:#231d15; --text2:#4a3f30; --muted:#7c705c; --gold:#9b7426; --gold2:#7c5a14; --gold-dim:rgba(155,116,38,.12);
+  --warn:#a8641a; --bad:#b33d25; --ok:#3f7f3a; --info:#2f6f8f}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;min-height:100vh;color:var(--text);font:15px/1.6 var(--sans);font-feature-settings:"tnum" 1;
+  background:radial-gradient(1200px 520px at 50% -140px, rgba(201,164,92,.10), transparent 70%), var(--bg)}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--gold2);text-decoration-color:rgba(230,205,147,.35);text-underline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.kicker{font:600 11px/1 var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+h1{font:500 40px/1.1 var(--serif);margin:8px 0 6px;letter-spacing:.005em}
+h1 em{font-style:italic;color:var(--gold2)}
+h2{font:500 28px/1.2 var(--serif);margin:0 0 6px;color:var(--gold2)}
+h3{font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:22px 0 10px}
+.lead{color:var(--text2);max-width:760px;margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+/* Kopf */
+header.hero{padding:34px 0 18px}
+.stamps{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.stamps b{color:var(--text2);font-weight:500}
+.back{float:right;margin-top:4px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0 4px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);padding:12px 14px}
+.kpi b{display:block;font:500 26px/1.1 var(--serif);color:var(--gold2)}
+.kpi span{font-size:12.5px;color:var(--muted)}
+/* Navigation */
+nav.tabs{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:18px 0 0}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs a{flex:none;padding:13px 12px 11px;color:var(--muted);text-decoration:none;font-size:14px;border-bottom:2px solid transparent}
+nav.tabs a:hover{color:var(--text)}
+nav.tabs a.on{color:var(--gold2);border-bottom-color:var(--gold)}
+section.blk{padding:40px 0 10px;border-bottom:1px solid var(--line)}
+section.blk:last-of-type{border-bottom:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+/* Ablauf */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px;counter-reset:st}
+.step{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);padding:14px 14px 12px 50px;min-height:92px}
+.step::before{counter-increment:st;content:counter(st);position:absolute;left:14px;top:13px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;font:600 12px/1 var(--sans);color:var(--bg);background:var(--muted)}
+.step.w{border-color:rgba(201,164,92,.45);background:linear-gradient(180deg,var(--gold-dim),transparent 70%),var(--surface)}
+.step.w::before{background:var(--gold)}
+.step b{display:block;font-weight:600;margin-bottom:3px}
+.step span{font-size:13px;color:var(--text2);line-height:1.45}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:var(--muted)}
+.legend i.g{background:var(--gold)}
+/* Engine-Netz */
+.edition{font:italic 17px/1.2 var(--serif);color:var(--gold);margin:-2px 0 8px}
+.nethead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-size:13px;color:var(--text2)}
+.nethead input[type=range]{flex:1 1 180px;accent-color:var(--gold)}
+.nethead b{font:500 20px/1 var(--serif);color:var(--gold2);min-width:22px;text-align:center}
+.nethead .chip{margin-left:auto}
+#net .lh{font:600 10.5px var(--sans);letter-spacing:.16em;fill:var(--muted)}
+#net .nedge{fill:none;transition:opacity .25s}
+#net .nedge.out{stroke:var(--gold)}
+#net.hl .nedge{opacity:.05!important}
+#net.hl .nedge.lit{opacity:.95!important}
+#net .pulse{filter:url(#nglow);pointer-events:none}
+#net.hl .pulse{opacity:.25}
+#net .glow{filter:url(#nglow);stroke:var(--bg);stroke-width:1.5}
+#net .onode circle{fill:var(--gold2)}
+#net .inode,#net .onode,#net .node{cursor:pointer}
+#net .inode text,#net .onode text{font:600 14.5px var(--sans);fill:var(--text2)}
+#net .inode.on text,#net .onode.on text,#net .inode:hover text,#net .onode:hover text{fill:var(--gold2)}
+#net .node rect{fill:color-mix(in srgb,var(--gold) calc(var(--a,0) * 42%),var(--surface2));stroke:var(--line2);stroke-width:1}
+#net .node rect.bar{fill:var(--gold);stroke:none;opacity:.8}
+#net .node.hot rect:first-of-type{stroke:var(--gold);filter:url(#nglow)}
+#net .node text{font:13px var(--sans);fill:var(--text);pointer-events:none}
+#net .node.on rect:first-of-type{stroke:var(--gold2);stroke-width:2;fill:var(--gold)}
+#net .node.on text{fill:var(--bg);font-weight:600}
+#net .node:hover rect:first-of-type{stroke:var(--gold2)}
+#ptstable td.x{font:500 15px var(--serif);color:var(--gold2)}
+#ptstable td.x.hi{color:var(--bad)}
+/* Engines */
+.eng{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:18px;margin-top:18px;align-items:start}
+@media (max-width:900px){.eng{grid-template-columns:1fr}}
+#net{width:100%;height:auto;display:block}
+.elist{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{border:1px solid var(--line2);background:transparent;border-radius:99px;padding:3px 10px;font-size:12.5px;cursor:pointer;color:var(--text2);line-height:1.5}
+.chip:hover{border-color:var(--gold);color:var(--text)}
+.chip.on{color:var(--gold2);border-color:var(--gold);background:var(--gold-dim)}
+.chip small{color:var(--muted);margin-left:4px}
+.detail h4{font:500 22px/1.2 var(--serif);margin:0 0 4px;color:var(--gold2)}
+.detail p{margin:6px 0}
+.sk{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-left:3px solid var(--kc,var(--X));border-radius:6px;padding:2px 8px;margin:2px 3px 2px 0;
+  font-size:12.5px;background:var(--surface2);cursor:pointer;color:var(--text);line-height:1.5}
+.sk:hover{border-color:var(--gold);border-left-color:var(--kc,var(--X))}
+.sk .a{color:var(--muted);font-size:11px}
+.sk .mt{color:var(--gold);font-size:10.5px;letter-spacing:.04em}
+.more{font-size:12.5px;color:var(--muted)}
+/* Skills */
+.skills{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:18px;margin-top:18px;align-items:start}
+@media (max-width:900px){.skills{grid-template-columns:1fr}}
+.search{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r2);padding:10px 12px}
+.search:focus{outline:2px solid var(--gold);outline-offset:1px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.results{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:var(--r2);background:var(--surface)}
+@media (max-width:900px){.results{max-height:300px}}
+.res{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px;border-left:3px solid var(--kc,var(--X))}
+.res:last-child{border-bottom:0}
+.res:hover,.res.on{background:var(--surface2)}
+.res .r{color:var(--muted);font-size:12px;white-space:nowrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;border-top:3px solid var(--kc,var(--gold))}
+.card h4{font:500 28px/1.15 var(--serif);margin:0;color:var(--gold2)}
+.card .ico{float:right;width:64px;height:64px;object-fit:cover;object-position:top;border-radius:8px;margin:0 0 8px 12px;box-shadow:0 0 0 1px var(--line2)}
+.card .de{color:var(--muted);font-size:13px;margin-top:2px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--text2);margin:8px 0 12px}
+.desc{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r2);padding:10px 13px;font-size:14px;color:var(--text)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 22px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--surface2);border:1px solid var(--line2);color:var(--text2)}
+.tg .pv{font:600 9.5px/1 var(--sans);letter-spacing:.06em;padding:2px 4px;border-radius:3px;color:var(--bg)}
+.pv.W{background:var(--ok)} .pv.M{background:var(--info)} .pv.R{background:var(--muted)}
+.tg.fr{border-color:rgba(224,162,91,.5);color:var(--warn)}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px}
+.meter{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--gold)}
+.box{border-left:3px solid var(--gold);background:var(--gold-dim);border-radius:6px;padding:9px 12px;font-size:13.5px;margin:8px 0}
+.box.warn{border-left-color:var(--warn);background:rgba(224,162,91,.09)}
+.box.bad{border-left-color:var(--bad);background:rgba(223,98,71,.08)}
+ul.clean{margin:4px 0 0;padding-left:18px}
+ul.clean li{margin:2px 0;font-size:13.5px;color:var(--text2)}
+.src{font-size:12.5px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+/* Friction */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-top:18px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);padding:14px 16px}
+.rule h5{margin:0 0 4px;font:600 15px/1.3 var(--sans);color:var(--text)}
+.rule .why{font-size:13px;color:var(--text2);margin:2px 0 8px}
+.badge{display:inline-block;font:600 10.5px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border-radius:5px;margin-left:6px;vertical-align:2px}
+.badge.soft{background:rgba(224,162,91,.16);color:var(--warn)} .badge.hard{background:rgba(223,98,71,.16);color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px/1.2 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r2);background:var(--surface);margin-top:12px}
+/* Glossar */
+.gfil{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:14px}
+.term{background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.term h5{margin:0;font:500 19px/1.2 var(--serif);color:var(--gold2)}
+.term blockquote{margin:0;padding:0 0 0 12px;border-left:2px solid var(--line2);color:var(--text);font-size:14px}
+.term .q{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.term .use{font-size:13px;color:var(--text2)}
+.term .use b{color:var(--gold);font-weight:600}
+.term .lk{font-size:12px;margin-top:auto}
+/* Quellen */
+.srcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:18px}
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+.pipe div{background:var(--surface2);border:1px solid var(--line);border-radius:var(--r2);padding:10px 12px;font-size:13px;color:var(--text2)}
+.pipe b{display:block;color:var(--text);font-weight:600;margin-bottom:2px}
+code{font:12.5px var(--mono);background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+footer{padding:26px 0 40px;color:var(--muted);font-size:12.5px}
+@media (max-width:640px){#netwrap{display:none}.wrap{padding:0 16px}h1{font-size:30px}h2{font-size:24px}.kicker{letter-spacing:.18em;font-size:10px}.card{padding:16px}.back{float:none;display:inline-block;margin-bottom:6px}}
+button:focus-visible,.res:focus-visible,.sk:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<header class="hero wrap">
+  <a class="back" href="index.html">← Back to the randomizer</a>
+  <span class="kicker">Guild Wars</span>
+  <h1>Zaishen Ultimate Bravery <em>Knowledge Base</em></h1>
+  <div class="edition">The Versatile Hero's Handbook</div>
+  <p class="lead">How the generator thinks, what it knows about every skill, which skills fight each other – and where each piece of knowledge comes from.</p>
+  <div class="stamps" id="stamps"></div>
+  <div class="kpis" id="kpis"></div>
+</header>
+<nav class="tabs" aria-label="Sections"><div class="wrap">
+  <a href="#overview" class="on">How a roll works</a><a href="#engines">Engines</a><a href="#skills">Skills</a><a href="#friction">Friction</a><a href="#mechanics">Mechanics</a><a href="#points">Points</a><a href="#sources">Sources</a>
+</div></nav>
+<main class="wrap">
+  <section class="blk" id="overview">
+    <h2>How a roll works</h2>
+    <p class="lead">No build is stored anywhere. Every bar is assembled from random choices, hard rules and a scoring function. Gold steps depend on the weirdness slider.</p>
+    <div class="flow" id="flow"></div>
+    <div class="legend"><span><i class="g"></i>weirdness changes this step</span><span><i></i>same at every weirdness</span></div>
+  </section>
+  <section class="blk" id="engines">
+    <h2>Engines</h2>
+    <p class="lead">An engine is a mechanic a bar grows around: enablers make something happen, payoffs profit from it. The network shows where engines get their skills from and which roles they end up filling – and how the weirdness slider switches them on.</p>
+    <div class="eng">
+      <div class="panel" id="netwrap">
+        <div class="nethead"><label for="nw">Weirdness</label><input type="range" id="nw" min="1" max="10" value="5" aria-label="Weirdness"><b id="nwv">5</b>
+          <span class="muted small">meta ← → wild</span><button class="chip" id="netreset">Whole network</button></div>
+        <svg id="net" role="img" aria-label="Engine network: professions feed engines, engines fill roles"></svg>
+      </div>
+      <div class="panel detail" id="edetail"></div>
+    </div>
+    <div class="elist" id="elist"></div>
+  </section>
+  <section class="blk" id="skills">
+    <h2>Skills</h2>
+    <p class="lead">Every skill as the generator reads it: what it causes, what it needs, which engines it feeds, what it clashes with – next to the wiki facts it is based on. Badges show where each trait comes from.</p>
+    <div class="skills">
+      <div>
+        <input class="search" id="q" type="search" placeholder="Search skills, e.g. Grenth, Hamstring, signet …" autocomplete="off" aria-label="Search skills">
+        <div class="filters" id="pf"></div>
+        <div class="filters" id="ff"></div>
+        <div class="results" id="res" role="listbox" aria-label="Skills"></div>
+        <div class="more" id="rescount"></div>
+      </div>
+      <div id="skillcard"></div>
+    </div>
+  </section>
+  <section class="blk" id="friction">
+    <h2>Friction</h2>
+    <p class="lead">Anti-synergies from the state model: a skill <b>needs</b>, <b>creates</b> or <b>destroys</b> your own state – health, enchantments, adrenaline, energy, attacking, moving. Soft friction lowers the score (strongly at low weirdness, mildly at high weirdness) and is shown on the card. Hard friction never appears – unless Full Bravery rolls “Self-sabotage allowed”.</p>
+    <div class="rules" id="rules"></div>
+    <h3>Skills that lock your own skills</h3>
+    <div class="tablewrap"><table id="distable"></table></div>
+  </section>
+  <section class="blk" id="mechanics">
+    <h2>Mechanics</h2>
+    <p class="lead">The game rules the generator relies on – quoted from the Guild Wars Wiki (in-game descriptions where available), with how the generator uses them.</p>
+    <div class="gfil" id="gfil"></div>
+    <div class="gloss" id="gloss"></div>
+  </section>
+  <section class="blk" id="points">
+    <h2>Points &amp; logbook</h2>
+    <p class="lead">Play a rolled build, log the result in the randomizer's logbook – and the braver the build, the more it is worth. Everything stays in your browser; a backup file moves it to another device.</p>
+    <div class="rules" id="ptsrules"></div>
+    <h3>Multiplier by weirdness and effective Full Bravery rules</h3>
+    <div class="tablewrap"><table id="ptstable"></table></div>
+    <p class="muted small" id="ptsnote"></p>
+  </section>
+  <section class="blk" id="sources">
+    <h2>Sources &amp; confidence</h2>
+    <p class="lead">Three sources, one pipeline. Traits read from skill descriptions are checked against the wiki’s structured fields; what cannot be settled automatically is listed for human review.</p>
+    <div class="srcs" id="srcs"></div>
+    <h3>Pipeline</h3>
+    <div class="pipe" id="pipe"></div>
+    <h3>Open questions</h3>
+    <div id="open"></div>
+  </section>
+</main>
+<footer class="wrap" id="foot"></footer>
+<script>/*DATA*/</script>
+<script>/*CORES*/</script>
+<script>/*GEN*/</script>
+<script>/*WIKI*/</script>
+<script>/*KBDATA*/</script>
+<script src="fundorte.js" onerror="void 0"></script>
+<script>/*KB*/</script>
+</body>
+</html>
