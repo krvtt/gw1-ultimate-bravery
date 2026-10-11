@@ -1,5 +1,5 @@
 // Generiert von src/build.py – nicht von Hand ändern
-const V = 'gwub-f81ec6ce55be', ICONS = 'gwub-icons', SHELL = ["./", "index.html", "knowledge.html", "manifest.webmanifest", "app-icon-192.png", "app-icon-512.png", "apple-touch-icon.png", "favicon-32.png"];
+const V = 'gwub-88ba56034c65', ICONS = 'gwub-icons', SHELL = ["./", "index.html", "knowledge.html", "manifest.webmanifest", "app-icon-192.png", "app-icon-512.png", "apple-touch-icon.png", "favicon-32.png"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V && k !== ICONS).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 function netAndStore(req) {

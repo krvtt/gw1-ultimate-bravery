@@ -16,6 +16,10 @@ dist = root / 'dist'
 rd = lambda n: (here / n).read_text() if (here / n).exists() else ''
 
 data = rd('data.js').replace('</', '<\\/').replace('const GWDATA=', 'window.GWDATA=')
+# Generator-Version: ändert sich nur, wenn sich das Würfelergebnis eines Seeds ändern kann (Generator, Kerne, Daten, Wiki-Wissen).
+# Steht in jedem Link (gv=); weicht sie ab, zeigt die App die gespeicherten Leisten statt neu zu würfeln.
+GV = hashlib.sha256(''.join(rd(n) for n in ('generator.js', 'cores.js', 'data.js', 'wiki.js')).encode('utf-8')).hexdigest()[:8]
+data = 'window.GW_GV="' + GV + '";\n' + data   # davor, damit window.GWDATA={…};</script> für Skript und Tests unverändert bleibt
 gen, cores, gear, app, wiki, kbdata, kb = rd('generator.js'), rd('cores.js'), rd('gear.js'), rd('app.js'), rd('wiki.js'), rd('kb_data.js'), rd('kb.js')
 app_html = rd('app.html').replace('/*DATA*/', data).replace('/*CORES*/', cores).replace('/*GEN*/', gen).replace('/*GEAR*/', gear) \
     .replace('/*WIKI*/', wiki).replace('/*APP*/', app)
@@ -92,7 +96,7 @@ self.addEventListener('fetch', e => {
 });
 """ % (version, json.dumps(shell))
 (docs / 'sw.js').write_text(sw)
-print(docs / 'index.html', round(len(app_html) / 1024), 'KB ·', 'knowledge.html', round(len(kb_html) / 1024), 'KB · sw', version)
+print(docs / 'index.html', round(len(app_html) / 1024), 'KB ·', 'knowledge.html', round(len(kb_html) / 1024), 'KB · sw', version, '· gv', GV)
 
 # Lokale Offline-Kopie (ohne Web-App-Teile): dist/gw1-bravery.html + dist/knowledge.html
 if dist.is_dir():

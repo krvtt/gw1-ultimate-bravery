@@ -1,0 +1,32 @@
+name: Build feedback
+description: You played a rolled build – tell us how it went.
+title: "[Build] "
+labels: ["build-feedback"]
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Build link
+      description: Use the Share button on the build page and paste the link here.
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: How did it go?
+      options:
+        - Worked great
+        - Worked, but felt weak
+        - Did not work
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where did you play it?
+      description: Mission, vanquish area or PvP – and normal or hard mode.
+  - type: textarea
+    id: notes
+    attributes:
+      label: What happened?
+      description: What worked, what did not, which skill felt useless?

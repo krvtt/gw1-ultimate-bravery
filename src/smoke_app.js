@@ -28,7 +28,7 @@ const U = 'file://' + path.join(DIST, 'index.html');
   await page.click('#dc-body [data-cls="5"]');
   for (const id of ['dunkoro', 'koss']) await page.click(`#dlg-heroes [data-hero="${id}"]`);
   await page.fill('#ov-w', '7'); await page.dispatchEvent('#ov-w', 'input');
-  await page.click('#ov-b label >> nth=0');
+  await page.click('#ov-b [data-bv="1"]');
   await page.click('#ov-go'); await wait(900);
   let r = await page.evaluate(() => ({rows: document.querySelectorAll('#out .mrow').length, crumb: document.querySelector('.crumb').innerText.replace(/\s+/g, ' '),
     who: [...document.querySelectorAll('#out .mrow .who')].map(x => x.innerText.trim()), roles: [...document.querySelectorAll('#out .mrow')].map(c => [c.querySelector('.p1').innerText, c.querySelector('.sub b').innerText]),

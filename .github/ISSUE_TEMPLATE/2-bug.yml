@@ -1,0 +1,26 @@
+name: Bug report
+description: Something is broken or looks wrong.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Build link (if it is about a build)
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      description: e.g. iPhone 15 / Safari, Windows / Chrome, installed app or browser tab
+  - type: textarea
+    id: wrong-skill
+    attributes:
+      label: Wrong skill data or mechanics?
+      description: Name the skill and what is wrong. A link to the Guild Wars Wiki page helps a lot.

@@ -86,13 +86,13 @@ function motorLine(b) {
     const ls = (b.links || []).filter(l => m.cons ? m.cons.includes(l.kind) : (G.motorHit(m, l.from, b) && G.motorHit(m, l.to, b))).slice(0, 2).map(l => `${l.from.n[L]} → ${l.to.n[L]}`);
     parts.push(`<b>${esc(m.name[L])}</b>${ls.length ? ' – ' + esc(ls.join(' · ')) : ''}`);
   }
-  return parts.length ? `<div class="story">${t('motor')}: ${parts.join('<br>')}</div>` : '';
+  return parts.length ? `<div class="story">${t('motor')} ${hlp('engine')}: ${parts.join('<br>')}</div>` : '';
 }
 function braveLine(b) {
   if (!b.bravery || !b.bravery.length) return '';
   const used = new Set(b.braveUsed || []);
   const names = b.bravery.map(id => { const n = esc((G.BRAVERY.find(r => r.id === id) || {name: {de: id, en: id}}).name[st.lang]); return used.has(id) ? n : `<s title="${esc(t('braveNoEffect'))}">${n}</s>`; });
-  return `<div class="brave-line">${ICON('i-flame')}<span><b>${t('braveOff')}:</b> ${names.join(' · ')}</span></div>`;
+  return `<div class="brave-line">${ICON('i-flame')}<span><b>${t('braveOff')}</b> ${hlp('brave')}<b>:</b> ${names.join(' · ')}</span></div>`;
 }
 function gearLine(b) {
   const els = b.bar.filter(s => s.tags.has('elem_weapon'));
@@ -145,6 +145,8 @@ function readHash() {
   st.heroesIn = h.get('h') !== null ? h.get('h').split(',').filter(Boolean) : null;
   st.destiny = h.get('d') === '1';
   st.link = h.get('seed') ? linkSpec(h) : null;   // geteilter/gespeicherter Wurf: Pool und Verbindungen exakt wie beim Absender
+  st.linkCodes = h.get('seed') && h.get('t') ? h.get('t').split('.').filter(Boolean) : null;   // gespeicherte Vorlagencodes (Schnappschuss)
+  st.linkGv = h.get('gv') || '';
   return !!h.get('seed');
 }
 function writeHash() {
@@ -153,6 +155,8 @@ function writeHash() {
   if (st.scope !== 1 && st.heroesUsed) h.set('h', st.heroesUsed.join(','));
   if (st.destiny) h.set('d', '1');
   linkParams(h);
+  const codes = codesOf(current);
+  if (codes.length) { h.set('gv', current && current.kind === 'snap' ? current.gv || '' : (window.GW_GV || '')); h.set('t', codes.join('.')); }
   history.replaceState(null, '', '#' + h.toString());
   if (typeof rememberBuild === 'function') rememberBuild('#' + h.toString());
 }
@@ -219,7 +223,16 @@ function roll(keepSeed) {
   }
   st.heroesIn = null;
   if (current.kind === 'team' && current.data.members.some(m => m && m.poolFallback)) setTimeout(() => toast(t5('poolWide')), 50);
+  if (keepSeed && st.linkCodes && st.linkCodes.join('.') !== codesOf(current).join('.'))
+    current = {kind: 'snap', codes: st.linkCodes, team: st.scope !== 1, heroes: st.heroesUsed || [], gv: st.linkGv, regen: current, destiny: st.destiny};
+  st.linkCodes = null;
   writeHash(); render(true);
+}
+function codesOf(c) {
+  if (!c) return [];
+  if (c.kind === 'snap') return c.codes.slice();
+  if (c.kind === 'solo') return c.data && c.data.code ? [c.data.code] : [];
+  return c.data ? c.data.members.map(m => m && m.code).filter(Boolean) : [];
 }
 
 // ---------- Darstellung ----------
@@ -303,9 +316,9 @@ function card(b, idx, team) {
     <div class="card-h">
       <div>${whoPill(b)}<div class="bname">${esc(b.name || '')}</div>
         <div class="pair"><span class="p1">${esc(pname(b.primary))}</span><span class="sl">/</span><span class="p2">${esc(pname(b.secondary))}</span></div>
-        <div class="sub"><span><b>${ROLES[b.role][st.lang]}</b></span><span>${WEAP[b.fam][st.lang]}</span><span>Weirdness ${b.weird}</span>${b.mode === 'pvp' ? '<span>PvP</span>' : ''}<span class="mult" title="${esc(t2('multT'))}">×${G.braveMult(b).toFixed(2)}</span></div></div>
+        <div class="sub"><span><b>${ROLES[b.role][st.lang]}</b></span><span>${WEAP[b.fam][st.lang]}</span><span>Weirdness ${b.weird} ${hlp('weird')}</span>${b.mode === 'pvp' ? '<span>PvP</span>' : ''}<span class="mult">×${G.braveMult(b).toFixed(2)} ${hlp('mult')}</span></div></div>
       <div class="acts">${team ? '' : `<button class="iconbtn" data-log="${idx}" title="${esc(t2('logIt'))}">${ICON('i-scroll')}</button>`}
-        <button class="code" data-copy="${esc(b.code)}" title="${t('copy')}">${ICON('i-copy')}<span>${esc(b.code)}</span></button>
+        <button class="code" data-copy="${esc(b.code)}" title="${t('copy')}">${ICON('i-copy')}<span>${esc(b.code)}</span></button>${hlp('code')}
         <button class="iconbtn" data-act="reroll" data-i="${idx}" title="${t('reroll')}">${ICON('i-redo')}</button>
         ${team ? `<button class="iconbtn" data-act="rerollkeep" data-i="${idx}" title="${t('rerollKeep')}">${ICON('i-lock')}</button>` : ''}
       </div>
@@ -327,7 +340,7 @@ function conflictLine(b) {
   if (!cs.length) return '';
   const brave = (b.braveUsed || []).includes('sabotage');
   const head = brave ? (st.lang === 'de' ? 'Selbstsabotage' : 'Self-sabotage') : (st.lang === 'de' ? 'Reibung' : 'Friction');
-  return `<div class="conflict${brave ? ' brave' : ''}"><b>${head}:</b> ` + cs.map(c =>
+  return `<div class="conflict${brave ? ' brave' : ''}"><b>${head}</b> ${hlp(brave ? 'sabotage' : 'friction')}<b>:</b> ` + cs.map(c =>
     `${esc(c.s.n[st.lang])} ↔ ${esc(c.with.slice(0, 3).map(x => x.n[st.lang]).join(', '))}${c.with.length > 3 ? ' …' : ''} – ${esc(c.txt[st.lang])}`).join('<br>') + '</div>';
 }
 function render(fresh) {
@@ -335,11 +348,13 @@ function render(fresh) {
   if (!current) { out.innerHTML = ''; return; }
   out.classList.toggle('fresh', !!fresh); if (fresh) { void out.offsetWidth; }
   syncControls();
-  if (current.kind === 'solo') {
+  if (current.kind === 'snap') {
+    out.innerHTML = snapHtml(current);
+  } else if (current.kind === 'solo') {
     out.innerHTML = current.data ? `<div class="builds">${card(current.data, 0, false)}</div>` : `<div class="card"><p>${esc(t2('noBuild'))}</p><button class="tool" data-dlg="dlg-skills">${ICON('i-book')}${esc(t2('skillsT'))}</button></div>`;
   } else {
     const tm = current.data, miss = G.teamCheck(tm);
-    out.innerHTML = destinyBanner(tm) + heroWarn(tm) + `<div class="banner">${tm.name ? `<span class="pill tname">${esc(tm.name)}</span>` : ''}${tm.theme ? `<span class="pill">${t('theme')}: ${esc(tm.theme.name[st.lang])}</span>` : ''}${miss.length ? `<span class="warn">${t('missing')}: ${miss.map(m => t(m)).join(', ')}</span>` : ''}<button class="tool" data-log="team">${ICON('i-scroll')}${esc(t2('logTeam'))} <span class="mult">×${G.braveMult(tm).toFixed(2)}</span></button></div>` +
+    out.innerHTML = destinyBanner(tm) + heroWarn(tm) + `<div class="banner">${tm.name ? `<span class="pill tname">${esc(tm.name)}</span>` : ''}${tm.theme ? `<span class="pill">${t('theme')}: ${esc(tm.theme.name[st.lang])}</span>` : ''}${miss.length ? `<span class="warn">${t('missing')}: ${miss.map(m => t(m)).join(', ')}</span>` : ''}<button class="tool" data-log="team">${ICON('i-scroll')}${esc(t2('logTeam'))} <span class="mult">×${G.braveMult(tm).toFixed(2)}</span></button>${hlp('mult')}</div>` +
       `<div class="builds team">${tm.members.map((m, i) => card(m, i, true)).join('')}</div>`;
   }
   if (typeof renderBuildbar === 'function') renderBuildbar();
@@ -411,7 +426,7 @@ document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
   const i = +a.dataset.i;
   if (current.kind === 'solo') { roll(false); return; }
-  G.rerollMember(current.data, i, a.dataset.act === 'rerollkeep'); G.nameTeam && G.nameTeam(current.data); render();
+  G.rerollMember(current.data, i, a.dataset.act === 'rerollkeep'); G.nameTeam && G.nameTeam(current.data); writeHash(); render();
 });
 $('#share').onclick = () => copy(location.href, t('linkcopied'));
 $('#weird').oninput = e => { st.weird = +e.target.value; $('#wv').textContent = st.weird; $('#wlabel').textContent = WL[st.lang][st.weird]; };
@@ -540,7 +555,7 @@ function openDlg(id, arg) { const d = $('#' + id); RENDER[id](arg); if (!d.open)
 // ---------- Skill-Basis ----------
 let skQ = '', skP = -1, skC = -1;
 RENDER['dlg-skills'] = () => {
-  $('#ds-title').textContent = t2('skillsT');
+  $('#ds-title').innerHTML = esc(t2('skillsT')) + ' ' + hlp('base');
   const d = Store.d, mine = new Set(d.unlocked), all = VB.skills;
   const ids = (p, c) => all.filter(s => (p < 0 || (s.p || 0) === p) && (c < 0 || s.c === c)).map(s => s.id);
   const cell = (p, c) => { const xs = ids(p, c), on = xs.filter(i => mine.has(i)).length;
@@ -665,7 +680,7 @@ function keepForm() { const tv = $('#dl-target') ? $('#dl-target').value : '', n
 const nameToEn = n => { n = (n || '').trim().toLowerCase(); const s = VB.skills.find(x => x.n.en.toLowerCase() === n || x.n.de.toLowerCase() === n); return s ? s.n.en : null; };
 const enToLang = n => { const s = VB.byName.get(n); return s ? s.n[st.lang] : n; };
 RENDER['dlg-links'] = () => {
-  $('#dk-title').textContent = t2('linksT');
+  $('#dk-title').innerHTML = esc(t2('linksT')) + ' ' + hlp('links');
   const k = Store.d.links;
   $('#dk-body').innerHTML = `<h3>${esc(t2('linksH'))}</h3>
     ${['core', 'pvx', 'cores'].map(x => `<label class="tg2"><input type="checkbox" data-lk="${x}" ${k[x] ? 'checked' : ''}> ${esc(t2(x))}</label>`).join('')}
@@ -990,7 +1005,7 @@ const views = {hub: $('#v-hub'), page: $('#v-page'), build: $('#v-build')};
 function showView(v) {
   for (const [k, el] of Object.entries(views)) el.hidden = k !== v;
   $('#homebtn').hidden = v === 'hub'; $('#hometxt').textContent = t4('back');
-  $('#foot').innerHTML = `${esc(t4('foot'))} · <a href="#/about">${esc(t4('about'))}</a> · <a href="#/howto">${esc(t4('howto'))}</a>`;
+  $('#foot').innerHTML = `${esc(t4('foot'))} · <a href="#/about">${esc(t4('about'))}</a> · <a href="#/howto">${esc(t4('howto'))}</a> · <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">${esc(t5('feedback'))} ↗</a>`;
   if (v !== 'build') hideTip();
   scrollTo(0, 0);
 }
@@ -1036,8 +1051,9 @@ function entryStrips(e, max) {
 }
 function renderHub() {
   const ti = titleInfo(), L = Store.d.log, last = Store.d.lastFlow;
+  const XP = {destiny: 'destiny', pvp: 'pvp'};
   const card = (k, extra, cls) => `<div role="button" tabindex="0" class="mode${cls ? ' ' + cls : ''}" data-flow="${k}"><span class="mi">${ICON(MODE_ICON[k])}</span>
-    <b>${esc(t4({destiny: 'mDestiny', pick3: 'mPick3', sig: 'mSig', pve: 'mPve', pvp: 'mPvp', random: 'mRandom'}[k]))}</b>
+    <b>${esc(t4({destiny: 'mDestiny', pick3: 'mPick3', sig: 'mSig', pve: 'mPve', pvp: 'mPvp', random: 'mRandom'}[k]))}${XP[k] ? ' ' + xpBadge() + ' ' + hlp(XP[k]) : ''}</b>
     <span>${esc(t4({destiny: 'mDestinyD', pick3: 'mPick3D', sig: 'mSigD', pve: 'mPveD', pvp: 'mPvpD', random: 'mRandomD'}[k]))}</span>${extra || ''}</div>`;
   const pveChips = `<span class="chips">${[1, 4, 6, 8].map(n => `<button data-flow="pve" data-size="${n}">${n === 1 ? esc(t4('solo')) : n}</button>`).join('')}</span>`;
   const pct = ti.next ? Math.round(100 * (ti.pts - (ti.rank ? ti.rank.p : 0)) / (ti.next.p - (ti.rank ? ti.rank.p : 0))) : 100;
@@ -1109,14 +1125,15 @@ function renderClass() {
   $('#dc-title').textContent = flowLabel(flow) + ' – ' + t4('chooseClass');
   const cls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(p => `<button class="cls${selCls === p ? ' on' : ''}" data-cls="${p}" style="--kc:var(--${AB[p]})"><span class="ab">${AB[p]}</span>${esc(pname(p))}</button>`).join('')
     + `<button class="cls${!selCls ? ' on' : ''}" data-cls="0" style="--kc:var(--X)"><span class="ab">?</span>${esc(t4('anyClass'))}</button>`;
-  const roleSel = k === 'pve' && !team ? `<div class="fld"><span class="lbl">${esc(t4('role'))}</span><select id="ov-role"><option value="">${esc(t('random'))}</option>${['dmg', 'heal', 'prot', 'support', 'tank'].map(r => `<option value="${r}" ${st.role === r ? 'selected' : ''}>${ROLES[r][st.lang]}</option>`).join('')}</select></div>` : '';
+  const roleSel = k === 'pve' && !team ? `<div class="fld"><span class="lbl">${esc(t4('role'))} ${hlp('role')}</span><select id="ov-role"><option value="">${esc(t('random'))}</option>${['dmg', 'heal', 'prot', 'support', 'tank'].map(r => `<option value="${r}" ${st.role === r ? 'selected' : ''}>${ROLES[r][st.lang]}</option>`).join('')}</select></div>` : '';
   $('#dc-body').innerHTML = `${charRow()}<div class="classes">${cls}</div>
-    <div class="ovrow"><div class="ovw"><div class="wl"><span class="lbl">${esc(t4('weird'))}</span><span><span class="wv" id="ov-wv">${st.weird}</span> <small id="ov-wl">${esc(WL[st.lang][st.weird])}</small></span></div>
+    <div class="ovrow"><div class="ovw"><div class="wl"><span class="lbl">${esc(t4('weird'))} ${hlp('weird')}</span><span><span class="wv" id="ov-wv">${st.weird}</span> <small id="ov-wl">${esc(WL[st.lang][st.weird])}</small></span></div>
       <input type="range" id="ov-w" min="1" max="10" value="${st.weird}"><div class="wl"><span>Meta</span><span>${esc(t('bonkers'))}</span></div></div>
-      <div class="fld" title="${esc(t4('braveTip'))}"><span class="lbl">${esc(t4('brave'))}</span><div class="brave" id="ov-b">${[0, 1, 2].map(i => `<label><input type="checkbox" ${i < st.brave ? 'checked' : ''}><span></span></label>`).join('')}</div></div>
+      <div class="fld bravef"><span class="lbl">${esc(t4('brave'))} ${hlp('brave')}</span><div class="seg" id="ov-b">${[0, 1, 2, 3].map(i => `<button type="button" data-bv="${i}" class="${i === st.brave ? 'on' : ''}">${i}</button>`).join('')}</div>
+        <small id="ov-bt">${esc(braveText(st.brave))}</small></div>
       ${roleSel}</div>`;
   const hs = $('#dlg-heroes'); hs.hidden = !team;
-  if (team) { RENDER['dlg-heroes'](); $('#dh-title').textContent = t4('heroesFor') + ' · ' + t4('heroesTip').replace('{n}', flow.scope - 1); }
+  if (team) { RENDER['dlg-heroes'](); $('#dh-title').innerHTML = esc(t4('heroesFor') + ' · ' + t4('heroesTip').replace('{n}', flow.scope - 1)) + ' ' + hlp('heroes'); }
   $('#dc-foot').innerHTML = `<button class="go${k === 'destiny' ? ' destiny' : ''}" id="ov-go">${ICON(pick ? 'i-book' : 'i-dice')}<span>${esc(pick ? t4('next') : t4('rollIt'))}</span></button>`;
 }
 $('#dlg-class').addEventListener('click', e => {
@@ -1125,13 +1142,15 @@ $('#dlg-class').addEventListener('click', e => {
   const c = e.target.closest('[data-cls]'); if (c) { keepOv(); selCls = +c.dataset.cls; const cc = curChar(); if (cc && cc.p !== selCls) flow.char = ''; renderClass(); return; }
   if (e.target.closest('#ov-go')) {
     st.prim = selCls; st.weird = +$('#ov-w').value;
-    st.brave = [...document.querySelectorAll('#ov-b input')].filter(x => x.checked).length;
-    st.role = $('#ov-role') ? $('#ov-role').value : '';
+    keepOv();
     $('#dlg-class').close(); startFlow(false);
   }
 });
 $('#dlg-class').addEventListener('input', e => { if (e.target.id === 'ov-w') { $('#ov-wv').textContent = e.target.value; $('#ov-wl').textContent = WL[st.lang][+e.target.value]; } });
-$('#dlg-class').addEventListener('change', e => { if (e.target.closest('#ov-b')) { const xs = [...document.querySelectorAll('#ov-b input')], n = xs.filter(x => x.checked).length; xs.forEach((x, i) => x.checked = i < n); } });
+$('#dlg-class').addEventListener('click', e => {
+  const b = e.target.closest('#ov-b [data-bv]'); if (!b) return;
+  document.querySelectorAll('#ov-b [data-bv]').forEach(x => x.classList.toggle('on', x === b)); $('#ov-bt').textContent = braveText(+b.dataset.bv);
+});
 
 // ---------- Pick-Overlay: Signature oder 1 aus 3 ----------
 const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[„“"'!’.]/g, '');
@@ -1182,12 +1201,13 @@ function renderBuildbar() {
   if (st.brave) parts.push('Bravery ' + st.brave);
   const el = st.core !== 'random' && st.elite && VB.byId.get(st.elite); if (el) parts.push(esc(el.n[st.lang]));
   $('#buildbar').innerHTML = `<span class="crumb">${parts.join('<i>·</i>')}</span>
-    <span class="sp"><button class="ghost" id="bb-change">${ICON('i-book')}<span>${esc(t4('change'))}</span></button>
+    <span class="sp"><button class="ghost" id="bb-share">${ICON('i-link')}<span>${esc(t5('share'))}</span></button><button class="ghost" id="bb-change">${ICON('i-book')}<span>${esc(t4('change'))}</span></button>
     <button class="go${flow.kind === 'destiny' ? ' destiny' : ''}" id="bb-roll">${ICON('i-dice')}<span>${esc(flow.kind === 'pick3' ? t4('drawAgain') : t4('reroll'))}</span><kbd>Space</kbd></button></span>`;
 }
 $('#buildbar').addEventListener('click', e => {
   if (e.target.closest('#bb-change')) { if (flow.random) flow = {kind: st.mode === 'pvp' ? 'pvp' : 'pve', scope: st.scope}; openClass(); return; }
   if (e.target.closest('#bb-roll')) rerollCurrent();
+  if (e.target.closest('#bb-share')) shareLink();
 });
 
 // ---------- Unterseiten ----------
@@ -1297,7 +1317,8 @@ function aboutHtml(h, src, ds, lic, tm) {
     <h3>${esc(ds)}</h3><ul><li>${esc(src[0])}: <a href="https://github.com/build-wars/gw-skilldata" target="_blank" rel="noopener">build-wars/gw-skilldata</a> · ${D.skills.length} skills</li>
       <li>${esc(src[1])}: ${esc((W.fetched || '').slice(0, 10) || '–')} · ${nO} places</li><li>${esc(src[2])}: ${(W.pvx && W.pvx.bars) || 0} bars</li><li>${esc(src[3])}: ${nIc}/${D.skills.length} (Guild Wars Wiki)</li></ul>
     <h3>${esc(lic)}</h3><ul><li>gw-skilldata: MIT</li><li><a href="https://wiki.guildwars.com/" target="_blank" rel="noopener">Guild Wars Wiki</a>: GNU FDL 1.3 or later</li><li><a href="https://gwpvx.fandom.com/" target="_blank" rel="noopener">PvXwiki</a>: CC BY-NC-SA</li><li>Tool code: MIT${REPO_URL ? ` · <a href="${esc(REPO_URL)}" target="_blank" rel="noopener">GitHub</a>` : ''}</li></ul>
-    <p>${esc(tm)}</p><p><a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base ↗</a></p></div>`;
+    <p>${esc(tm)}</p><p><a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base ↗</a> · <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">${esc(t5('feedbackLong'))} ↗</a></p>
+    <p><small>Version ${esc(window.GW_GV || '–')}</small></p></div>`;
 }
 
 // ---------- Öffnen/Schließen ----------
@@ -1330,7 +1351,13 @@ const TX5 = {
     persistNo: 'Storage: best effort – the browser may clear it when space runs low. Keep a backup.',
     iosNote: 'iPhone/iPad: the Home Screen app has its own storage, separate from Safari. Set it up after adding it to the Home Screen, or move your state with a backup.',
     updated: 'New version loaded – reload to use it.',
-    poolWide: 'Your character knows too few skills for this roll – used the skills of all your characters.',},
+    poolWide: 'Your character knows too few skills for this roll – used the skills of all your characters.',
+    share: 'Share', shareText: 'Can you play this Guild Wars build?', feedback: 'Feedback', feedbackLong: 'Feedback & bug reports (GitHub)',
+    xp: 'experimental', helpAria: 'What is this?', hero: 'Hero',
+    snapOld: 'This link was made with an older version of the generator. Showing the bars exactly as they were saved.',
+    snapMod: 'This build was changed after rolling (e.g. a hero re-rolled). Showing the bars exactly as they were saved.',
+    snapRegen: 'Roll this seed with the current version', snapNoLog: 'Roll it with the current version to log it.',
+    brave0: 'No rules off – a sensible build.', braveN: '{n} random build rule(s) off – the card shows which. +25 % points for each rule that bites.'},
   de: {swMine: 'Meine Charaktere', swManual: 'Meine Skill-Basis', swBlank: 'Blanker Start', swImport: 'Charaktere importieren →',
     swHintChars: 'Deine Leiste nutzt nur Skills, die der gewählte Charakter gelernt hat; Helden nutzen alles, was deine Charaktere können.',
     swHintManual: 'Nutzt die Skills, die du im Account angehakt hast.', swHintBlank: 'Alle Skills sind verfügbar – als wäre auf deinem Account alles freigeschaltet.',
@@ -1349,7 +1376,13 @@ const TX5 = {
     persistNo: 'Speicher: nach Möglichkeit – der Browser kann ihn bei Platzmangel leeren. Mach ab und zu ein Backup.',
     iosNote: 'iPhone/iPad: Die Home-Screen-App hat einen eigenen Speicher, getrennt von Safari. Richte sie nach dem Hinzufügen zum Home-Screen ein oder übertrage deinen Stand per Backup.',
     updated: 'Neue Version geladen – neu laden, um sie zu nutzen.',
-    poolWide: 'Dein Charakter kann zu wenige Skills für diesen Wurf – genommen wurden die Skills all deiner Charaktere.',},
+    poolWide: 'Dein Charakter kann zu wenige Skills für diesen Wurf – genommen wurden die Skills all deiner Charaktere.',
+    share: 'Teilen', shareText: 'Schaffst du diesen Guild-Wars-Build?', feedback: 'Feedback', feedbackLong: 'Feedback & Fehler melden (GitHub)',
+    xp: 'experimentell', helpAria: 'Was ist das?', hero: 'Held',
+    snapOld: 'Dieser Link stammt aus einer älteren Version des Generators. Gezeigt werden die Leisten genau so, wie sie gespeichert wurden.',
+    snapMod: 'Dieser Build wurde nach dem Würfeln verändert (z. B. ein Held neu gewürfelt). Gezeigt werden die Leisten genau so, wie sie gespeichert wurden.',
+    snapRegen: 'Diesen Seed mit der aktuellen Version würfeln', snapNoLog: 'Zum Eintragen ins Logbuch mit der aktuellen Version würfeln.',
+    brave0: 'Keine Regel aus – ein vernünftiger Build.', braveN: '{n} zufällige Bau-Regel(n) aus – welche, steht auf der Karte. +25 % Punkte je Regel, die wirklich greift.'},
 };
 const t5 = k => (TX5[st.lang] || TX5.en)[k] || TX5.en[k] || k;
 
@@ -1386,7 +1419,7 @@ tbFile.addEventListener('change', e => {
 });
 RENDER['dlg-chars'] = () => {
   const cs = Store.d.chars || [];
-  $('#dch-title').textContent = t5('charsT');
+  $('#dch-title').innerHTML = esc(t5('charsT')) + ' ' + xpBadge() + ' ' + hlp('chars');
   $('#dch-body').innerHTML = `<p>${esc(t5('charsLead'))}</p>
     ${cs.length ? `<table class="ltab"><tbody>${cs.map((c, i) => `<tr><td><label class="tg2" style="margin:0"><input type="checkbox" data-chon="${i}" ${CHAR_OK(c) ? 'checked' : ''} ${c.pre ? 'disabled' : ''}> <b>${esc(c.n)}</b></label></td>
       <td>${c.p ? `<span class="ab" style="color:var(--${AB[c.p]})">${esc(AB[c.p])}</span> ${esc(pname(c.p))}` : '–'}</td><td>${c.s.length} ${esc(t5('charsSkills'))}</td><td class="hide-m">${c.pvp ? esc(t5('charsPvp')) : c.pre ? esc(t5('charsPre')) : ''}</td></tr>`).join('')}</tbody></table>
@@ -1409,7 +1442,7 @@ function baseSwitch() {
   const d = Store.d, n = charsOn().length, on = d.base !== 'all';
   const left = n ? t5('swMine') + ' · ' + n : d.base === 'mine' ? t5('swManual') : t5('swMine');
   const hint = !on ? t5('swHintBlank') : d.base === 'chars' && n ? t5('swHintChars') : d.base === 'mine' ? t5('swHintManual') : t5('swHintNone');
-  return `<div class="basesw"><div class="seg"><button data-hb="mine" class="${on ? 'on' : ''}">${esc(left)}</button><button data-hb="all" class="${on ? '' : 'on'}">${esc(t5('swBlank'))}</button></div>
+  return `<div class="basesw"><div class="seg"><button data-hb="mine" class="${on ? 'on' : ''}">${esc(left)}</button><button data-hb="all" class="${on ? '' : 'on'}">${esc(t5('swBlank'))}</button></div>${hlp('base')}
     <small>${esc(hint)}${!n && d.base !== 'mine' ? ` <a class="lnk" href="#/account">${esc(t5('swImport'))}</a>` : ''}</small></div>`;
 }
 function lastBuildCard() {
@@ -1446,11 +1479,11 @@ function hubExtraClick(e) {
 function charRow() {
   if (Store.d.base !== 'chars' || flow.kind === 'pvp' || flow.kind === 'random') return '';
   const cs = charsOn(); if (!cs.length) return '';
-  return `<div class="chars"><span class="lbl">${esc(t5('yourChars'))}</span><div class="chrs">${cs.map((c, i) => `<button class="chr${flow.char === c.n ? ' on' : ''}" data-char="${i}" style="--kc:var(--${AB[c.p] || 'X'})"><span class="ab">${esc(AB[c.p] || '?')}</span><b>${esc(c.n)}</b><small>${c.s.length}</small></button>`).join('')}</div></div>`;
+  return `<div class="chars"><span class="lbl">${esc(t5('yourChars'))} ${xpBadge()} ${hlp('chars')}</span><div class="chrs">${cs.map((c, i) => `<button class="chr${flow.char === c.n ? ' on' : ''}" data-char="${i}" style="--kc:var(--${AB[c.p] || 'X'})"><span class="ab">${esc(AB[c.p] || '?')}</span><b>${esc(c.n)}</b><small>${c.s.length}</small></button>`).join('')}</div></div>`;
 }
 function keepOv() {
   const w = $('#ov-w'); if (w) st.weird = +w.value;
-  const b = document.querySelectorAll('#ov-b input'); if (b.length) st.brave = [...b].filter(x => x.checked).length;
+  const b = $('#ov-b .on'); if (b) st.brave = +b.dataset.bv;
   const r = $('#ov-role'); if (r) st.role = r.value;
 }
 function saveBackup() {
@@ -1469,6 +1502,95 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && docum
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadCtrl) toast(t5('updated')); hadCtrl = true; });
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
+
+// ================= Next Level (Paket A): Hilfe, Teilen, stabile Links, Etiketten =================
+const FEEDBACK_URL = 'https://github.com/krvtt/gw1-ultimate-bravery/issues/new/choose';
+const HELP = {
+  en: {
+    weird: 'Weirdness 1–10: how far the dice may stray from proven builds. 1 stays close to known patterns, 10 is as strange as it gets. The hard rules (one elite, a weapon needs its attribute, every payoff has a trigger …) hold on every level.',
+    brave: 'Full Bravery: each level switches off one random build rule – e.g. mixing melee and ranged, a weapon without its attribute, or ignoring energy. The card shows which rules were switched off; struck-through ones changed nothing this time. Every rule that bites gives +25 % points.',
+    role: 'Role: what the bar should do in the party – Damage, Healer, Prot, Support or Tank. Random lets the dice decide.',
+    engine: 'Engine: the mechanic the bar is built around, e.g. burning, counting signets or shadow steps. The dice picks one or two engines and then looks for skills that trigger them and pay off. Arrows show which skill feeds which.',
+    friction: 'Friction: skills that work against each other, e.g. a low-health payoff next to a max-health buff. Allowed, but penalised and shown so you know where the bar fights itself.',
+    sabotage: 'Self-sabotage: a Full Bravery rule. The dice was allowed to combine skills that fight each other – on purpose.',
+    mult: 'Points multiplier for the logbook: +8 % per weirdness level above 1, +25 % per Full Bravery rule that bites. Log a finished mission or vanquish to earn points, titles and achievements.',
+    code: 'Template code: copy it and save it as a .txt file in Documents\\Guild Wars\\Templates\\Skills (one code per file). In the game it then shows up in the Skills and Attributes panel (K) under Templates.',
+    heroes: 'Heroes: you are slot 1, then your heroes in the order you pick them; the dice fills free slots. Healer and Prot only go to monks or ritualists, Tank to warriors, assassins, paragons or dervishes. Heroes never get PvE-only skills.',
+    base: 'Skill pool. Start blank: every skill counts as unlocked. Use my characters: only skills your imported characters know (Account → My characters). My skill base: the skills you ticked by hand.',
+    chars: 'Experimental: imports character_completion.json from GWToolbox++. Your bar then only uses skills the chosen character has learned; heroes use what all your characters learned together. Built from Toolbox’s file format – tell us if your file does not work.',
+    links: 'Connections are the skill pairs the generator treats as synergies: built-in pairs, measured pairs from PvXwiki and your own. Switch groups off or add your own pairs.',
+    destiny: 'Experimental: the dice also picks a real mission or vanquish area, its party size and your heroes. Party sizes come from the Guild Wars Wiki; a few are estimated.',
+    pvp: 'Experimental: builds for spontaneous 1v1 duels with PvP skill versions. The least tuned mode so far.'},
+  de: {
+    weird: 'Weirdness 1–10: wie weit der Würfel von bewährten Builds abweichen darf. 1 bleibt nah an bekannten Mustern, 10 wird maximal schräg. Die harten Regeln (ein Elite, Waffe braucht ihr Attribut, jeder Nutznießer hat einen Auslöser …) gelten auf jeder Stufe.',
+    brave: 'Full Bravery: Jede Stufe schaltet eine zufällige Bau-Regel ab – z. B. Nah- und Fernkampf mischen, Waffe ohne ihr Attribut oder Energie ignorieren. Die Karte zeigt, welche Regeln aus waren; durchgestrichene haben diesmal nichts geändert. Jede Regel, die greift, gibt +25 % Punkte.',
+    role: 'Rolle: was die Leiste im Team leisten soll – Damage, Healer, Prot, Support oder Tank. Zufall lässt den Würfel entscheiden.',
+    engine: 'Engine: die Mechanik, um die die Leiste gebaut ist, z. B. Brennen, Siegel zählen oder Schattenschritte. Der Würfel wählt ein bis zwei Engines und sucht dann Skills, die sie auslösen und davon profitieren. Pfeile zeigen, welcher Skill welchen füttert.',
+    friction: 'Reibung: Skills, die sich gegenseitig behindern, z. B. ein Wenig-Leben-Effekt neben einem Max-Leben-Buff. Erlaubt, aber abgewertet und angezeigt, damit du weißt, wo die Leiste sich selbst bremst.',
+    sabotage: 'Selbstsabotage: eine Full-Bravery-Regel. Der Würfel durfte Skills kombinieren, die sich beißen – mit Absicht.',
+    mult: 'Punkte-Multiplikator fürs Logbuch: +8 % je Weirdness-Stufe über 1, +25 % je Full-Bravery-Regel, die greift. Trag eine geschaffte Mission oder einen Vanquish ein, um Punkte, Titel und Erfolge zu sammeln.',
+    code: 'Vorlagencode: kopieren und als .txt-Datei in Dokumente\\Guild Wars\\Templates\\Skills speichern (ein Code pro Datei). Im Spiel erscheint er dann im Fenster Fertigkeiten und Attribute (K) unter Vorlagen.',
+    heroes: 'Helden: Du bist Platz 1, danach deine Helden in der gewählten Reihenfolge; freie Plätze füllt der Würfel. Heiler und Prot nur Mönch oder Ritualist, Tank nur Krieger, Assassine, Paragon oder Derwisch. Helden bekommen nie PvE-only-Skills.',
+    base: 'Skill-Pool. Blanker Start: jeder Skill gilt als freigeschaltet. Meine Charaktere: nur Skills, die deine importierten Charaktere können (Account → Meine Charaktere). Meine Skill-Basis: die Skills, die du von Hand angehakt hast.',
+    chars: 'Experimentell: importiert character_completion.json aus GWToolbox++. Deine Leiste nutzt dann nur Skills, die der gewählte Charakter gelernt hat; Helden nutzen, was alle deine Charaktere zusammen gelernt haben. Gebaut nach dem Dateiformat von Toolbox – sag Bescheid, wenn deine Datei nicht klappt.',
+    links: 'Verbindungen sind die Skill-Paare, die der Generator als Synergie behandelt: mitgelieferte Paare, gemessene Paare aus dem PvXwiki und deine eigenen. Gruppen lassen sich abschalten, eigene Paare hinzufügen.',
+    destiny: 'Experimentell: Der Würfel wählt zusätzlich eine echte Mission oder ein Vanquish-Gebiet, dessen Teamgröße und deine Helden. Teamgrößen stammen aus dem Guild Wars Wiki, einige sind geschätzt.',
+    pvp: 'Experimentell: Builds für spontane 1v1-Duelle mit den PvP-Versionen der Skills. Bisher der am wenigsten abgestimmte Modus.'},
+};
+function hlp(k) { return `<button type="button" class="hlp" data-help="${k}" aria-label="${esc(t5('helpAria'))}">?</button>`; }
+function xpBadge() { return `<span class="xp">${esc(t5('xp'))}</span>`; }
+function braveText(n) { return n ? t5('braveN').replace('{n}', n) : t5('brave0'); }
+const helpPop = document.createElement('div');
+helpPop.id = 'help-pop'; helpPop.className = 'helppop'; helpPop.hidden = true; helpPop.setAttribute('role', 'tooltip');
+document.body.appendChild(helpPop);
+let helpFor = null;
+function showHelp(btn) {
+  const txt = (HELP[st.lang] || HELP.en)[btn.dataset.help] || HELP.en[btn.dataset.help]; if (!txt) return;
+  (btn.closest('dialog') || document.body).appendChild(helpPop);   // offene Dialoge liegen in der obersten Ebene
+  helpPop.textContent = txt; helpPop.hidden = false; helpFor = btn;
+  const r = btn.getBoundingClientRect(), w = Math.min(320, innerWidth - 16);
+  helpPop.style.width = w + 'px';
+  helpPop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+  const h = helpPop.offsetHeight, below = r.bottom + 8;
+  helpPop.style.top = (below + h > innerHeight - 8 && r.top - h - 8 > 8 ? r.top - h - 8 : below) + 'px';
+}
+function hideHelp() { helpPop.hidden = true; helpFor = null; }
+// Fangphase: ein Hilfe-Knopf in einer Kachel (Modus-Karte, Kopfzeile) löst sonst die Kachel aus
+document.addEventListener('click', e => {
+  const b = e.target.closest('.hlp');
+  if (b) { e.preventDefault(); e.stopPropagation(); if (helpFor === b && !helpPop.hidden) hideHelp(); else showHelp(b); return; }
+  if (!helpPop.hidden && !e.target.closest('#help-pop')) hideHelp();
+}, true);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !helpPop.hidden) { hideHelp(); e.stopPropagation(); }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.hlp')) e.stopPropagation();   // Leertaste würfelt sonst neu
+}, true);
+addEventListener('scroll', () => { if (!helpPop.hidden) hideHelp(); }, {passive: true});
+
+// Teilen: auf dem Handy das System-Teilen-Menü, sonst Link kopieren
+function shareLink() {
+  const url = location.href;
+  if (navigator.share && matchMedia('(pointer: coarse)').matches) navigator.share({title: 'Zaishen Ultimate Bravery', text: t5('shareText'), url}).catch(() => {});
+  else copy(url, t('linkcopied'));
+}
+
+// Schnappschuss: Leisten genau so, wie sie im Link gespeichert sind (andere Version oder nachträglich geändert)
+function snapHtml(c) {
+  const old = c.gv && c.gv !== window.GW_GV;
+  const rows = c.codes.map((code, i) => {
+    const d = decodeSafe(code); if (!d) return '';
+    const hid = c.team && i ? c.heroes[i - 1] : null, who = c.team ? (i === 0 ? t3('you') : (hid && HERO(hid) ? HERO(hid).n : t5('hero') + ' ' + (i + 1))) : '';
+    const attrs = d.ranks.filter(([, r]) => r > 0).map(([a, r]) => `${esc(aname(a))} ${r}`).join(' · ');
+    return `<div class="snap-m"><div class="snap-h">${who ? `<b>${esc(who)}</b>` : ''}${combo(d.p1, d.p2)}<span>${esc(pname(d.p1))} / ${esc(pname(d.p2) || '–')}</span></div>
+      ${miniBar(d.skills)}<div class="snap-a">${attrs}</div><div class="acts"><button class="code" data-copy="${esc(code)}" title="${t('copy')}">${ICON('i-copy')}<span>${esc(code)}</span></button>${hlp('code')}</div></div>`;
+  }).join('');
+  return `<article class="card snap"><p class="snap-n">${esc(t5(old ? 'snapOld' : 'snapMod'))}</p>${rows}
+    <p class="snap-f"><button class="btn" data-snap="regen">${esc(t5('snapRegen'))}</button> <small>${esc(t5('snapNoLog'))}</small></p></article>`;
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('[data-snap="regen"]') || !current || current.kind !== 'snap') return;
+  current = current.regen; writeHash(); render(true);
+});
 
 // Start: Sprache (gemerkt hat Vorrang vor dem Link, sonst Englisch), dann Hub, Unterseite oder Build-Link
 if (Store.d.lang || !/[#&]l=/.test(location.hash)) st.lang = Store.d.lang || 'en';

@@ -4,7 +4,7 @@ function el(id) {
   const e = {id, innerHTML: '', textContent: '', value: '', style: {}, dataset: {}, disabled: false, classList: {toggle() {}},
     querySelectorAll: () => (id === '#mode' || id === '#scope' || id === '#lang') ? [el('b1')] : [], onclick: null, offsetWidth: 300, offsetHeight: 200,
     getBoundingClientRect: () => ({left: 10, top: 10, bottom: 50, width: 80}),
-    addEventListener() {}, showModal() {}, close() {}, open: false, hidden: false, insertAdjacentHTML() {}, focus() {}, setSelectionRange() {}, querySelector: () => null, click() {}};
+    addEventListener() {}, showModal() {}, close() {}, open: false, hidden: false, insertAdjacentHTML() {}, focus() {}, setSelectionRange() {}, querySelector: () => null, click() {}, setAttribute() {}, appendChild() {}};
   return e;
 }
 const els = {};

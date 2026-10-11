@@ -1,0 +1,17 @@
+name: Idea
+description: Suggest a feature or an improvement.
+title: "[Idea] "
+labels: ["idea"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would make the tool more fun or more useful?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: What would you do with it?
