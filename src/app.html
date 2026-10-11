@@ -48,6 +48,18 @@ input[type=checkbox]{accent-color:var(--gold)}
 .fate .dt{font:500 24px/1.25 var(--serif);margin:6px 0 4px;color:var(--text)}
 .fate .dkind{color:#c9b2ff}
 .fate .ds{font-size:13px;color:var(--text2)}.fate .dn{font-size:12px;color:var(--muted);margin-top:6px}
+/* Zaishen Bravery: goldene Variante von Banner und Hub-Karte */
+.fate.zai{border-color:rgba(201,164,92,.6);background:radial-gradient(600px 160px at 10% 0%,rgba(201,164,92,.2),transparent 70%),var(--surface)}
+.fate.zai .dk{color:var(--gold2);display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;letter-spacing:.2em}.fate.zai .dkind{color:var(--gold2)}
+.zai-card{border:1px solid rgba(201,164,92,.6);border-radius:14px;padding:14px 18px;margin:0 0 14px;background:radial-gradient(560px 150px at 8% 0%,rgba(201,164,92,.2),transparent 70%),var(--surface)}
+.zai-card .zk{font:600 11px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gold2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.zai-card .zdate{margin-left:auto;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.zai-card .zt{font:500 22px/1.25 var(--serif);margin:8px 0 2px;color:var(--text)}.zai-card .dkind{color:var(--gold2)}
+.zai-card .zs{font-size:13px;color:var(--text2)}
+.zai-card .zf{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted)}
+.zai-card .zdone{color:var(--gold2);font-weight:600}.zai-card .zdone.no{color:var(--muted);font-weight:500}
+.zai-card .btn{margin-left:auto}
+.ztag{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--gold);color:var(--gold2);font:600 10px/1.5 var(--sans);letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
 .hgrid{display:flex;flex-direction:column;gap:6px;margin:12px 0}
 .hrow{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:start}
 .hrow .hp{font-size:12.5px;font-weight:600;padding-top:6px}
@@ -133,7 +145,7 @@ select:disabled{opacity:.4}
 .ico{width:16px;height:16px;flex:none}
 /* Ergebnis */
 #out{margin:26px 0 40px}
-.banner{display:flex;gap:12px;align-items:center;margin-bottom:14px;color:var(--text2);font-size:14px}
+.banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:14px;color:var(--text2);font-size:14px}
 .banner .pill{border:1px solid var(--gold);color:var(--gold2);border-radius:99px;padding:3px 11px;font-size:12px;letter-spacing:.04em}
 .warn{color:#e3a07f}
 .builds{display:grid;gap:18px}

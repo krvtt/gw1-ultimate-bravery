@@ -56,6 +56,18 @@ input[type=checkbox]{accent-color:var(--gold)}
 .fate .dt{font:500 24px/1.25 var(--serif);margin:6px 0 4px;color:var(--text)}
 .fate .dkind{color:#c9b2ff}
 .fate .ds{font-size:13px;color:var(--text2)}.fate .dn{font-size:12px;color:var(--muted);margin-top:6px}
+/* Zaishen Bravery: goldene Variante von Banner und Hub-Karte */
+.fate.zai{border-color:rgba(201,164,92,.6);background:radial-gradient(600px 160px at 10% 0%,rgba(201,164,92,.2),transparent 70%),var(--surface)}
+.fate.zai .dk{color:var(--gold2);display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;letter-spacing:.2em}.fate.zai .dkind{color:var(--gold2)}
+.zai-card{border:1px solid rgba(201,164,92,.6);border-radius:14px;padding:14px 18px;margin:0 0 14px;background:radial-gradient(560px 150px at 8% 0%,rgba(201,164,92,.2),transparent 70%),var(--surface)}
+.zai-card .zk{font:600 11px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gold2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.zai-card .zdate{margin-left:auto;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.zai-card .zt{font:500 22px/1.25 var(--serif);margin:8px 0 2px;color:var(--text)}.zai-card .dkind{color:var(--gold2)}
+.zai-card .zs{font-size:13px;color:var(--text2)}
+.zai-card .zf{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted)}
+.zai-card .zdone{color:var(--gold2);font-weight:600}.zai-card .zdone.no{color:var(--muted);font-weight:500}
+.zai-card .btn{margin-left:auto}
+.ztag{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--gold);color:var(--gold2);font:600 10px/1.5 var(--sans);letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
 .hgrid{display:flex;flex-direction:column;gap:6px;margin:12px 0}
 .hrow{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:start}
 .hrow .hp{font-size:12.5px;font-weight:600;padding-top:6px}
@@ -141,7 +153,7 @@ select:disabled{opacity:.4}
 .ico{width:16px;height:16px;flex:none}
 /* Ergebnis */
 #out{margin:26px 0 40px}
-.banner{display:flex;gap:12px;align-items:center;margin-bottom:14px;color:var(--text2);font-size:14px}
+.banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:14px;color:var(--text2);font-size:14px}
 .banner .pill{border:1px solid var(--gold);color:var(--gold2);border-radius:99px;padding:3px 11px;font-size:12px;letter-spacing:.04em}
 .warn{color:#e3a07f}
 .builds{display:grid;gap:18px}
@@ -2174,7 +2186,7 @@ function rateBox(idx) {
     ${Object.entries(R).map(([k, v]) => `<button class="chip" data-reason="${k}">${esc(v)}</button>`).join('')}
     <input class="rnote" placeholder="${esc(t('notePh'))}" maxlength="200"></div>`;
 }
-const st = {mode:'pve', scope:1, weird:5, prim:0, role:'', lang:'en', seed:0, brave:0, core:'random', elite:0, heroesIn:null, destiny:false};
+const st = {mode:'pve', scope:1, weird:5, prim:0, role:'', lang:'en', seed:0, brave:0, core:'random', elite:0, heroesIn:null, destiny:false, zaishen:0};   // zaishen = Tagesnummer (0 = kein Zaishen-Wurf)
 let current = null; // {kind:'solo'|'team', data}
 // Fundorte/Notizen: gebündeltes Wiki-Wissen (wiki.js) + optional fundorte.js vom Skript (bringt Icons mit)
 const SRC = (() => {
@@ -2210,6 +2222,7 @@ function readHash() {
   st.elite = +h.get('e') || 0; st.core = st.elite ? 'pick' : st.core;
   st.heroesIn = h.get('h') !== null ? h.get('h').split(',').filter(Boolean) : null;
   st.destiny = h.get('d') === '1';
+  st.zaishen = st.destiny ? Math.max(0, Math.floor(+h.get('z')) || 0) : 0;   // nur Anzeige/Logbuch (Tag des Wurfs), beeinflusst das Würfeln nicht
   st.link = h.get('seed') ? linkSpec(h) : null;   // geteilter/gespeicherter Wurf: Pool und Verbindungen exakt wie beim Absender
   st.linkCodes = h.get('seed') && h.get('t') ? h.get('t').split('.').filter(Boolean) : null;   // gespeicherte Vorlagencodes (Schnappschuss)
   st.linkGv = h.get('gv') || '';
@@ -2219,7 +2232,7 @@ function writeHash() {
   const h = new URLSearchParams({m:st.mode, s:st.scope, w:st.weird, p:st.prim, r:st.role, l:st.lang, b:st.brave, seed:st.seed});
   if (st.scope === 1 && st.core !== 'random' && st.elite) h.set('e', st.elite);
   if (st.scope !== 1 && st.heroesUsed) h.set('h', st.heroesUsed.join(','));
-  if (st.destiny) h.set('d', '1');
+  if (st.destiny) { h.set('d', '1'); if (st.zaishen) h.set('z', st.zaishen); }
   linkParams(h);
   const codes = codesOf(current);
   if (codes.length) { h.set('gv', current && current.kind === 'snap' ? current.gv || '' : (window.GW_GV || '')); h.set('t', codes.join('.')); }
@@ -2255,7 +2268,7 @@ function syncControls() {
 // ---------- Würfeln ----------
 function newSeed() { return (Math.random() * 2 ** 32) >>> 0; }
 function roll(keepSeed) {
-  if (!keepSeed) { st.seed = newSeed(); st.link = null; }
+  if (!keepSeed) { st.seed = newSeed(); st.link = null; st.zaishen = 0; }   // jeder frische Wurf verlässt den Zaishen-Modus
   const P = pools(), E = st.link ? st.link.e : localEdges(), cores = st.link ? st.link.cores : Store.d.links.cores, rf = st.link ? st.link.rf : Store.d.reforged;
   G.setEdgeConfig(E); st.used = {p: P.p, h: st.scope === 1 ? P.p : P.h, e: E, cores, rf};
   if (st.scope === 1) {
@@ -2280,7 +2293,7 @@ function roll(keepSeed) {
     st.destiny = false;
   } else {
     // Helden: aus dem Link (gleicher Wurf) oder aus deiner Auswahl; Schicksal: Würfel wählt alles
-    const dest = st.destiny ? rollDestiny(st.seed) : null;
+    const dest = st.destiny ? rollDestiny(st.seed, !!st.zaishen) : null;   // Zaishen: alle Kampagnen, unabhängig vom lokalen Filter
     if (dest) st.scope = dest.size;
     const heroes = dest ? [] : (keepSeed && st.heroesIn) ? st.heroesIn : Store.d.heroes;
     st.heroesUsed = heroes.slice(0, st.scope - 1);
@@ -2290,7 +2303,7 @@ function roll(keepSeed) {
   st.heroesIn = null;
   if (current.kind === 'team' && current.data.members.some(m => m && m.poolFallback)) setTimeout(() => toast(t5('poolWide')), 50);
   if (keepSeed && st.linkCodes && st.linkCodes.join('.') !== codesOf(current).join('.'))
-    current = {kind: 'snap', codes: st.linkCodes, team: st.scope !== 1, heroes: st.heroesUsed || [], gv: st.linkGv, regen: current, destiny: st.destiny};
+    current = {kind: 'snap', codes: st.linkCodes, team: st.scope !== 1, heroes: st.heroesUsed || [], gv: st.linkGv, regen: current, destiny: st.destiny, zaishen: st.zaishen};
   st.linkCodes = null;
   writeHash(); render(true);
 }
@@ -2370,8 +2383,8 @@ function card(b, idx, team) {
         <div class="pair"><span class="p1">${esc(pname(b.primary))}</span><span class="sl">/</span><span class="p2">${esc(pname(b.secondary))}</span>
         <span class="sub" style="display:inline-flex;margin-left:10px"><span><b>${ROLES[b.role][st.lang]}</b></span><span>${WEAP[b.fam][st.lang]}</span></span></div></div>
       <div class="acts"><button class="code" data-copy="${esc(b.code)}" title="${t('copy')}">${ICON('i-copy')}<span>${esc(b.code)}</span></button>
-        <button class="iconbtn" data-act="reroll" data-i="${idx}" title="${t('reroll')}">${ICON('i-redo')}</button>
-        <button class="iconbtn" data-act="rerollkeep" data-i="${idx}" title="${t('rerollKeep')}">${ICON('i-lock')}</button></div>
+        ${st.zaishen ? '' : `<button class="iconbtn" data-act="reroll" data-i="${idx}" title="${t('reroll')}">${ICON('i-redo')}</button>
+        <button class="iconbtn" data-act="rerollkeep" data-i="${idx}" title="${t('rerollKeep')}">${ICON('i-lock')}</button>`}</div>
     </div>
     <div class="bar">${b.bar.map((s, i) => skillTile(s, b, i)).join('')}</div>
     <details class="more"><summary>${t('plan')} · ${t('attrsH')} · ${t('setsH')}</summary>
@@ -2491,6 +2504,7 @@ document.addEventListener('click', e => {
   const cp = e.target.closest('[data-copy]'); if (cp) { copy(cp.dataset.copy, t('copy')); return; }
   const a = e.target.closest('[data-act]'); if (!a) return;
   const i = +a.dataset.i;
+  if (st.zaishen) { toast(t5('zaiFixed')); return; }   // Zaishen-Wurf ist für alle gleich: kein Einzel-Neuwurf
   if (current.kind === 'solo') { roll(false); return; }
   G.rerollMember(current.data, i, a.dataset.act === 'rerollkeep'); G.nameTeam && G.nameTeam(current.data); writeHash(); render();
 });
@@ -2675,7 +2689,7 @@ function snapshot(ctx) {
   if (!current) return null;
   if (ctx.team && current.kind === 'team') {
     const tm = current.data;
-    return {team: true, name: tm.name || ('Team ' + tm.size + (tm.theme ? ' · ' + tm.theme.name[st.lang] : '')), size: tm.size, mult: G.braveMult(tm), weird: tm.weird, hash: location.hash,
+    return {team: true, zaishen: st.zaishen || 0, name: tm.name || ('Team ' + tm.size + (tm.theme ? ' · ' + tm.theme.name[st.lang] : '')), size: tm.size, mult: G.braveMult(tm), weird: tm.weird, hash: location.hash,
       destiny: tm.destiny ? {kind: tm.destiny.kind, place: tm.destiny.place, region: tm.destiny.region, c: tm.destiny.c} : null,
       members: tm.members.map(m => Object.assign(facts(m), {name: m.name, code: m.code, hero: m.slot && m.slot.kind === 'hero' ? m.slot.hero.id : 'you'})), src: tm};
   }
@@ -2696,7 +2710,7 @@ RENDER['dlg-log'] = ctx => {
   $('#dl-title').textContent = t2('logT');
   const L = Store.d.log, sum = k => L.filter(e => e.ok && e.kind === k).length, total = L.reduce((s, e) => s + (e.pts || 0), 0);
   const prev = logCtx ? G.points(logKind, logCtx.src, logOk) : 0, kinds = ['nm', 'hm', 'vq'];
-  const form = logCtx ? `<div class="form"><h3 style="margin-top:0">${esc(t2('newEntry'))}: ${esc(logCtx.name)} <span class="mult">×${logCtx.mult.toFixed(2)}</span></h3>
+  const form = logCtx ? `<div class="form"><h3 style="margin-top:0">${esc(t2('newEntry'))}: ${esc(logCtx.name)} <span class="mult">×${logCtx.mult.toFixed(2)}</span>${logCtx.zaishen ? ` <span class="ztag">${esc(t5('zaiT'))} · ${esc(zaiInfo(logCtx.zaishen).date)}</span>` : ''}</h3>
       <div class="strips" style="margin:0 0 10px">${typeof entryStrips === 'function' ? entryStrips({build: logCtx}) : ''}</div>
       <div class="row"><input class="inp" id="dl-target" list="dl-orte" placeholder="${esc(t2('target'))}" style="flex:1 1 240px"><datalist id="dl-orte">${orte().map(o => `<option value="${esc(o)}">`).join('')}</datalist></div>
       <p class="small" style="font-size:12px;color:var(--muted)">${esc((window.GW_WIKI && window.GW_WIKI.orte) ? t2('listSrcW') : t2('listSrc'))}</p>
@@ -2707,7 +2721,7 @@ RENDER['dlg-log'] = ctx => {
         <b class="mult" style="font:500 20px var(--serif)">${prev} ${esc(t2('points'))}</b><button class="btn" id="dl-save">${esc(t2('save'))}</button></div>
       <p style="font-size:12px;color:var(--muted)">${esc(t2('formula'))}</p></div>` : '';
   const rows = L.slice().reverse().map(e => `<tr><td class="hide-m">${esc(e.ts.slice(0, 10))}</td><td>${esc(e.target)}</td><td>${esc(t2(e.kind))}</td>
-      <td>${esc(e.build.name)}<br><span style="color:var(--muted);font:11px var(--mono)">${esc(e.build.team ? e.build.members.length + '×' : e.build.code || '')}</span></td>
+      <td>${esc(e.build.name)}${e.zaishen ? ` <span class="ztag">${esc(t5('zaiT'))}</span>` : ''}<br><span style="color:var(--muted);font:11px var(--mono)">${esc(e.build.team ? e.build.members.length + '×' : e.build.code || '')}</span></td>
       <td class="${e.ok ? 'ok' : 'no'}">${esc(t2(e.ok ? 'ok' : 'fail'))}</td><td><b>${e.pts}</b></td>
       <td><button class="lnk" data-lload="${e.id}">${esc(t2('load'))}</button> · <button class="lnk" data-ldel="${e.id}">${esc(t2('del'))}</button></td></tr>`).join('');
   $('#dl-body').innerHTML = form + `<div class="kp"><div><b>${total}</b><span>${esc(t2('total'))}</span></div><div><b>${sum('nm')}</b><span>${esc(t2('doneNM'))}</span></div>
@@ -2725,7 +2739,8 @@ $('#dlg-log').addEventListener('click', e => {
   if (e.target.closest('#dl-save')) {
     const target = $('#dl-target').value.trim(); if (!target) { $('#dl-target').focus(); return; }
     const sn = logCtx, entry = {id: Date.now().toString(36), ts: new Date().toISOString(), target, kind: logKind, ok: logOk, note: $('#dl-note').value.trim(),
-      pts: G.points(logKind, sn.src, logOk), mult: sn.mult, build: Object.assign({}, sn, {src: undefined})};
+      pts: G.points(logKind, sn.src, logOk), mult: sn.mult, build: Object.assign({}, sn, {src: undefined, zaishen: undefined})};
+    if (sn.zaishen) entry.zaishen = sn.zaishen;   // Tagesnummer des Zaishen-Wurfs (Grundlage der Zaishen-Erfolge)
     const before = titleInfo();
     Store.d.log.push(entry); Store.save(); askPersist(); logCtx = null; toast(t2('saved') + ' · ' + entry.pts + ' ' + t2('points')); celebrate(before); RENDER['dlg-log'](); return;
   }
@@ -2859,18 +2874,19 @@ const REGIONS = [
   {r: 'Realm of Torment', c: 3, sz: 8, m: 1, vq: 1},
   {r: 'Far Shiverpeaks', c: 4, sz: 8, m: 0, vq: 1}, {r: 'Charr Homelands', c: 4, sz: 8, m: 0, vq: 1}, {r: 'Tarnished Coast', c: 4, sz: 8, m: 0, vq: 1},
 ];
-function destinyPlaces(kind) {
+// allCamps (Zaishen): alle Kampagnen, der lokale Kampagnen-Filter gilt nicht – sonst bekäme jeder einen anderen Ort
+function destinyPlaces(kind, allCamps) {
   const camps = new Set(Store.d.camps);
-  const W = (window.GW_WIKI && GW_WIKI.orte || []).filter(o => o.sz && (kind === 'vq' ? o.vq : o.k === 'm') && (o.c === undefined || camps.has(o.c)));
+  const W = (window.GW_WIKI && GW_WIKI.orte || []).filter(o => o.sz && (kind === 'vq' ? o.vq : o.k === 'm') && (allCamps || o.c === undefined || camps.has(o.c)));
   if (W.length) return W.map(o => ({place: o.n, region: o.r || '', c: o.c, size: Math.min(8, Math.max(4, o.sz)), exact: true, est: !!o.est, kills: o.kills || 0}));
-  return REGIONS.filter(x => (kind === 'vq' ? x.vq : x.m) && camps.has(x.c))
+  return REGIONS.filter(x => (kind === 'vq' ? x.vq : x.m) && (allCamps || camps.has(x.c)))
     .map(x => ({place: x.r, region: x.r, c: x.c, size: x.sz, exact: false}));
 }
-function rollDestiny(seed) {
+function rollDestiny(seed, allCamps) {
   const rng = G.rngFrom((seed ^ 0x5bd1e995) >>> 0);
   const r = rng(), kind = r < 0.4 ? 'nm' : r < 0.7 ? 'hm' : 'vq';
-  let list = destinyPlaces(kind);
-  if (!list.length) list = destinyPlaces('nm');
+  let list = destinyPlaces(kind, allCamps);
+  if (!list.length) list = destinyPlaces('nm', allCamps);
   if (!list.length) return null;
   const pl = list[Math.floor(rng() * list.length)];
   return Object.assign({kind}, pl);
@@ -2878,10 +2894,34 @@ function rollDestiny(seed) {
 function destinyBanner(tm) {
   const d = tm.destiny; if (!d) return '';
   const what = d.exact ? esc(d.place) : `${esc(d.kind === 'vq' ? t3('anyArea') : t3('anyMission'))} ${esc(t3('inRegion'))} <b>${esc(d.region)}</b>`;
-  return `<div class="fate"><div class="dk">${esc(t3('destinyH'))}</div>
+  const z = st.zaishen ? zaiInfo(st.zaishen) : null;
+  return `<div class="fate${z ? ' zai' : ''}"><div class="dk">${z ? esc(t5('zaiT')) + ' · ' + esc(z.date) + ' ' + hlp('zaishen') : esc(t3('destinyH'))}</div>
     <div class="dt"><span class="dkind">${esc(t2(d.kind))}</span> ${what}${d.c !== undefined ? ` <span class="muted">· ${esc(cname(d.c))}</span>` : ''}</div>
-    <div class="ds">${d.exact && d.region ? esc(d.region) + ' · ' : ''}${d.kills ? '≈ ' + d.kills + ' ' + esc(t3('foes')) + ' · ' : ''}${esc(t3('teamOf'))} ${tm.size} · ${esc(t3('you'))} + ${tm.size - 1} ${esc(t3('heroesT'))} · Weirdness ${tm.weird} · ×${G.braveMult(tm).toFixed(2)}</div>
+    <div class="ds">${d.exact && d.region ? esc(d.region) + ' · ' : ''}${d.kills ? '≈ ' + d.kills + ' ' + esc(t3('foes')) + ' · ' : ''}${esc(t3('teamOf'))} ${tm.size} · ${esc(t3('you'))} + ${tm.size - 1} ${esc(t3('heroesT'))} · Weirdness ${tm.weird}${z && tm.bravery ? ' · Bravery ' + tm.bravery : ''} · ×${G.braveMult(tm).toFixed(2)}</div>
     ${!d.exact ? `<div class="dn">${esc(t3('provisional'))}</div>` : d.est ? `<div class="dn">${esc(t3('estSize'))}</div>` : ''}</div>`;
+}
+
+// ---------- Zaishen Bravery: ein Wurf pro Tag, für alle gleich ----------
+// Tageswechsel 16:00 UTC (wie die Zaishen-Quests im Spiel; Quelle: Briefing B, Wiki „Zaishen Challenge Quest“ – hier nicht nachgeprüft).
+// Alles stammt aus der Tagesnummer: Seed, Weirdness, Bravery. Pool/Verbindungen sind fest (siehe zaiLink), Ort ignoriert den Kampagnen-Filter.
+const ZAI_SHIFT = 16 * 3600e3, DAY_MS = 864e5;
+const ZAI_WD = {1: [4, 0], 2: [5, 0], 3: [6, 0], 4: [7, 0], 5: [8, 0], 6: [9, 1], 0: [10, 2]};   // UTC-Wochentag (So = 0) → [Weirdness, Bravery]
+const zaiDay = (now = Date.now()) => Math.floor((now - ZAI_SHIFT) / DAY_MS);
+function zaiInfo(day) {
+  const d = new Date(day * DAY_MS), wb = ZAI_WD[d.getUTCDay()];
+  return {day, date: d.toISOString().slice(0, 10), weird: wb[0], brave: wb[1], seed: (G.rngFrom((day * 2654435761) >>> 0)() * 2 ** 32 >>> 0) || 1};
+}
+const zaiLink = () => ({p: null, h: null, e: {core: true, pvx: true, custom: []}, cores: true, rf: true});   // alle Skills, Standard-Verbindungen, Reforged an
+function zaiLeft() {
+  const m = Math.max(1, Math.ceil(((zaiDay() + 1) * DAY_MS + ZAI_SHIFT - Date.now()) / 60000)), h = Math.floor(m / 60);
+  return t5('zaiIn').replace('{t}', h ? h + ' h ' + (m % 60) + ' min' : m + ' min');
+}
+function startZaishen() {
+  const z = zaiInfo(zaiDay());
+  flow = {kind: 'zaishen', scope: 8};   // bewusst nicht in lastFlow: „Weiter wie zuletzt“ bleibt dein eigener Modus
+  Object.assign(st, {mode: 'pve', scope: 8, destiny: true, zaishen: z.day, weird: z.weird, brave: z.brave, prim: 0, role: '', core: 'random', elite: 0, seed: z.seed,
+    link: zaiLink(), linkCodes: null, heroesIn: null});
+  goBuild(); roll(true);
 }
 
 // ---------- Helden-Dialog ----------
@@ -2965,6 +3005,9 @@ const BS = e => e.build.team ? (e.build.members || []) : [e.build];
 const OK = L => L.filter(e => e.ok);
 const uniq = a => new Set(a.filter(x => x !== undefined && x !== null)).size;
 const used = (e, id) => BS(e).some(b => (b.used || []).includes(id));
+// Zaishen: verschiedene Tage mit geschafftem Wurf und längste Serie aufeinanderfolgender Tage
+const zDays = L => [...new Set(OK(L).filter(e => e.zaishen).map(e => e.zaishen))].sort((a, b) => a - b);
+const zRun = L => { let best = 0, run = 0, prev = null; for (const d of zDays(L)) { run = prev !== null && d === prev + 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; } return best; };
 // [id, Symbol, DE-Name, EN-Name, DE-Text, EN-Text, (Logbuch) => [Stand, Ziel]]
 const ACH = [
   ['first', '✎', 'Erste Schritte', 'First Steps', 'Trag einen Build ins Logbuch ein.', 'Log a build.', L => [L.length, 1]],
@@ -2997,6 +3040,9 @@ const ACH = [
   ['names', '✍', 'Namedropper', 'Namedropper', '25 verschiedene Build-Namen im Logbuch.', '25 different build names in the logbook.', L => [uniq(L.flatMap(e => BS(e).map(b => b.nm || b.name))), 25]],
   ['meme', '☻', 'Meme-Lord', 'Meme Lord', 'Erfolg mit einem Kult-Namen (Meme, Popkultur, GW-Insider).', 'Success with a cult name (meme, pop culture, GW insider).', L => [OK(L).filter(e => BS(e).some(b => G.isMemeName && G.isMemeName(b.nm || b.name))).length, 1]],
   ['pts1000', '⌘', 'Vierstellig', 'Four Digits', '1.000 Punkte gesamt.', '1,000 points in total.', L => [L.reduce((s, e) => s + (e.pts || 0), 0), 1000]],
+  ['zinit', '✪', 'Zaishen Initiate', 'Zaishen Initiate', 'Trag deinen ersten Zaishen-Bravery-Wurf ins Logbuch ein.', 'Log your first Zaishen Bravery roll.', L => [L.filter(e => e.zaishen).length, 1]],
+  ['zreg', '❖', 'Zaishen Regular', 'Zaishen Regular', 'Schaff Zaishen Bravery an 7 verschiedenen Tagen.', 'Complete Zaishen Bravery on 7 different days.', L => [zDays(L).length, 7]],
+  ['zstreak', '✹', 'Zaishen Streak', 'Zaishen Streak', 'Schaff Zaishen Bravery an 3 Tagen in Folge.', 'Complete Zaishen Bravery on 3 days in a row.', L => [zRun(L), 3]],
 ];
 function checkAch() {
   const L = Store.d.log, got = [];
@@ -3085,7 +3131,7 @@ function route() {
     showView('hub'); renderHub(); return;
   }
   const fromLink = readHash(); showView('build');
-  flow = {kind: st.destiny ? 'destiny' : st.mode === 'pvp' ? 'pvp' : (st.core !== 'random' && st.elite) ? 'sig' : 'pve', scope: st.scope};
+  flow = {kind: st.zaishen ? 'zaishen' : st.destiny ? 'destiny' : st.mode === 'pvp' ? 'pvp' : (st.core !== 'random' && st.elite) ? 'sig' : 'pve', scope: st.scope};
   syncControls(); roll(fromLink);
 }
 function relang() {
@@ -3100,7 +3146,7 @@ function rememberFlow() { Store.d.lastFlow = Object.assign({}, flow, {prim: st.p
 const MODE_ICON = {destiny: 'i-star', pick3: 'i-dice', sig: 'i-book', pve: 'i-shield', pvp: 'i-flame', random: 'i-redo'};
 function flowLabel(f) {
   const k = f.kind;
-  const base = k === 'destiny' ? t4('modeDestiny') : k === 'pick3' ? t4('modePick3') : k === 'sig' ? t4('modeSig') : k === 'pvp' ? 'PvP 1v1' : k === 'random' ? 'Random' : 'PvE';
+  const base = k === 'zaishen' ? t5('zaiT') : k === 'destiny' ? t4('modeDestiny') : k === 'pick3' ? t4('modePick3') : k === 'sig' ? t4('modeSig') : k === 'pvp' ? 'PvP 1v1' : k === 'random' ? 'Random' : 'PvE';
   return base + (k === 'pve' ? ' · ' + (f.scope > 1 ? t4('teamOf') + ' ' + f.scope : t4('solo')) : '');
 }
 function miniBar(ids, eliteMark) {
@@ -3115,6 +3161,21 @@ function entryStrips(e, max) {
     const who = e.build.team ? (m.hero === 'you' ? t3('you') : (HERO(m.hero) || {}).n || '') : '';
     return `<div class="strip"><span class="who2">${who ? `<b>${esc(who)}</b> · ` : ''}${combo(d.p1, d.p2)} ${esc(m.nm || m.name || '')}</span>${miniBar(d.skills)}</div>`; }).join('');
 }
+// Zaishen-Karte ganz oben: Ort, Weirdness/Bravery des Tages, Countdown, „heute geschafft“
+function zaiCard() {
+  const day = zaiDay(), z = zaiInfo(day), dest = rollDestiny(z.seed, true), L = Store.d.log;
+  const done = L.some(e => e.zaishen === day && e.ok), tried = !done && L.some(e => e.zaishen === day);
+  const where = !dest ? '' : dest.exact ? esc(dest.place) : `${esc(dest.kind === 'vq' ? t3('anyArea') : t3('anyMission'))} ${esc(t3('inRegion'))} ${esc(dest.region)}`;
+  return `<div class="zai-card"><div class="zk">${esc(t5('zaiT'))} ${hlp('zaishen')}<span class="zdate">${esc(z.date)}</span></div>
+    <div class="zt">${dest ? `<span class="dkind">${esc(t2(dest.kind))}</span> ${where}` : esc(t5('zaiLead'))}</div>
+    <div class="zs">${dest ? `${esc(t3('teamOf'))} ${dest.size} · ` : ''}Weirdness ${z.weird}${z.brave ? ' · Bravery ' + z.brave : ''}</div>
+    <div class="zf"><span class="zcd" id="zai-cd" data-day="${day}">${esc(zaiLeft())}</span>${done ? `<span class="zdone">${esc(t5('zaiDone'))}</span>` : tried ? `<span class="zdone no">${esc(t5('zaiTried'))}</span>` : ''}
+      <button class="btn" data-zai="1">${esc(t5(done || tried ? 'zaiView' : 'zaiRoll'))}</button></div></div>`;
+}
+setInterval(() => {   // Countdown mitlaufen lassen; beim Tageswechsel Karte neu aufbauen
+  const el = $('#zai-cd'); if (!el || views.hub.hidden) return;
+  if (+el.dataset.day !== zaiDay()) renderHub(); else el.textContent = zaiLeft();
+}, 15000);
 function renderHub() {
   const ti = titleInfo(), L = Store.d.log, last = Store.d.lastFlow;
   const XP = {destiny: 'destiny', pvp: 'pvp'};
@@ -3125,7 +3186,7 @@ function renderHub() {
   const pct = ti.next ? Math.round(100 * (ti.pts - (ti.rank ? ti.rank.p : 0)) / (ti.next.p - (ti.rank ? ti.rank.p : 0))) : 100;
   const recent = L.slice(-2).reverse();
   views.hub.innerHTML = `${baseSwitch()}<p class="hero">${esc(t4('hubLead'))}</p>
-    ${backupNag()}${lastBuildCard()}
+    ${zaiCard()}${backupNag()}${lastBuildCard()}
     ${last ? `<div class="cont">${ICON('i-redo')}<span><b>${esc(t4('cont'))}</b> ${esc(t4('contD'))}: ${esc(flowLabel(last))}${last.prim ? ' · ' + esc(pname(last.prim)) : ''} · W${last.weird || 5}${last.brave ? ' · Bravery ' + last.brave : ''}</span><button class="btn" data-cont="1">${esc(t4('rollIt'))}</button></div>` : ''}
     <div class="modes">${card('destiny', '', 'fate-m')}${card('pick3')}${card('sig')}${card('pve', pveChips)}${card('pvp')}${card('random')}</div>
     <div class="hubrow">
@@ -3157,7 +3218,7 @@ function applyFlow() {
   const k = flow.kind;
   st.mode = k === 'pvp' ? 'pvp' : 'pve';
   st.scope = k === 'pve' ? flow.scope : k === 'destiny' ? 8 : 1;   // Destiny: die echte Größe setzt der Würfel
-  st.destiny = k === 'destiny';
+  st.destiny = k === 'destiny'; st.zaishen = 0;
   if (k !== 'pick3' && k !== 'sig') { st.core = 'random'; st.elite = 0; }
   if (k !== 'pve' || st.scope > 1) st.role = k === 'pve' && st.scope === 1 ? st.role : '';
 }
@@ -3173,6 +3234,7 @@ function randomFlow() {
   startFlow(true);
 }
 function rerollCurrent() {
+  if (st.zaishen) { toast(t5('zaiFixed')); return; }   // Zaishen-Wurf ist für alle gleich: kein Neuwurf (Leertaste, Knopf)
   if (current && current.kind === 'team' && current.data.destiny) { st.destiny = true; }
   if (flow.kind === 'pick3') { openPick(); return; }
   if (flow.random) { randomFlow(); return; }
@@ -3260,6 +3322,11 @@ $('#dlg-pick').addEventListener('click', e => {
 
 // ---------- Build-Kopfzeile ----------
 function renderBuildbar() {
+  if (st.zaishen) {   // fester Tageswurf: nur Teilen, kein Ändern/Neu würfeln
+    $('#buildbar').innerHTML = `<span class="crumb"><b>${esc(t5('zaiT'))}</b><i>·</i>${esc(zaiInfo(st.zaishen).date)}<i>·</i>W${st.weird}${st.brave ? '<i>·</i>Bravery ' + st.brave : ''}</span>
+      <span class="sp"><button class="ghost" id="bb-share">${ICON('i-link')}<span>${esc(t5('share'))}</span></button></span>`;
+    return;
+  }
   const parts = [`<b>${esc(flowLabel(Object.assign({}, flow, {scope: st.scope})))}</b>`];
   if (st.mode === 'pvp' && flow.kind !== 'pvp') parts[0] = '<b>PvP 1v1</b>';
   const cc = !st.link && Store.d.base === 'chars' && st.mode !== 'pvp' ? curChar() : null;
@@ -3293,7 +3360,7 @@ function renderLogPage() {
     <div class="kp"><div><b>${ti.pts}</b><span>${esc(t2('total'))}</span></div><div><b>${sum('nm')}</b><span>${esc(t2('doneNM'))}</span></div>
       <div><b>${sum('hm')}</b><span>${esc(t2('doneHM'))}</span></div><div><b>${sum('vq')}</b><span>${esc(t2('doneVQ'))}</span></div><div><b>${new Set(L.filter(e => e.ok).map(e => e.target)).size}</b><span>${esc(t2('targets'))}</span></div></div>
     ${L.length ? L.slice().reverse().map(e => `<div class="lent"><div><div class="lt">${esc(e.target)}</div>
-        <div class="lm">${esc(e.ts.slice(0, 10))} · ${esc(t2(e.kind))} · ${esc(t2(e.ok ? 'ok' : 'fail'))} · ×${(e.mult || 1).toFixed(2)}${e.build.destiny ? ' · ' + esc(t4('modeDestiny')) : ''}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
+        <div class="lm">${esc(e.ts.slice(0, 10))} · ${esc(t2(e.kind))} · ${esc(t2(e.ok ? 'ok' : 'fail'))} · ×${(e.mult || 1).toFixed(2)}${e.zaishen ? ' · <span class="ztag">' + esc(t5('zaiT')) + ' ' + esc(zaiInfo(e.zaishen).date) + '</span>' : e.build.destiny ? ' · ' + esc(t4('modeDestiny')) : ''}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
         <div class="lp${e.ok ? '' : ' no'}">${e.pts}</div><div class="strips">${entryStrips(e)}</div>
         <div class="la"><button class="lnk" data-lload="${e.id}">${esc(t4('load'))}</button><button class="lnk" data-ldel="${e.id}">${esc(t4('del'))}</button></div></div>`).join('')
       + `<p><button class="btn sec" id="dl-csv">${esc(t4('csv'))}</button></p>` : `<div class="panel"><p>${esc(t4('noEntries'))}</p></div>`}`;
@@ -3329,7 +3396,8 @@ const rankList = () => RANKS.map(r => `${esc(r.n[st.lang])} (${r.p})`).join(' ·
 const HOWTO = {
   en: () => `<h2 class="ph">How to play</h2><div class="panel prose">
     <h3>Quick start</h3><ol><li>Pick a mode on the hub.</li><li>Choose your class, weirdness and Full Bravery in the overlay.</li><li>Roll, load the template code in game (skills window → templates) and play.</li><li>Log the result: mission (normal/hard mode) or vanquish, done or failed – points, titles and achievements follow.</li></ol>
-    <h3>Modes</h3><ul><li><b>Roll your Destiny</b> – the dice pick mission or vanquish, a real place from the wiki, the party size of that place, your heroes and all bars. You only pick your class.</li>
+    <h3>Modes</h3><ul><li><b>Zaishen Bravery</b> – one roll per day, the same for everyone: place, party, heroes and all bars. It changes at 16:00 UTC, always uses all skills and the default connections, so you can compare with others. Weirdness and Bravery follow the weekday (Mon 4 … Fri 8, Sat 9 + Bravery 1, Sun 10 + Bravery 2; UTC).</li>
+      <li><b>Roll your Destiny</b> – the dice pick mission or vanquish, a real place from the wiki, the party size of that place, your heroes and all bars. You only pick your class.</li>
       <li><b>Pick 1 of 3</b> – three elites of your class, you choose one, the bar grows around it.</li><li><b>Pick your Signature</b> – search any elite by German or English name.</li>
       <li><b>PvE</b> – solo bar or a party of 4/6/8 with your heroes. <b>PvP 1v1</b> – PvP versions of skills, no PvE-only skills.</li><li><b>Random</b> – mode, size and class are rolled.</li></ul>
     <h3>Weirdness 1–10</h3><p>1 stays close to proven patterns, 10 is as strange as it gets – but the hard rules hold on every level: one elite, at most three attribute lines plus the primary attribute, points only into lines the bar uses, a weapon only with its weapon attribute (rank ≥ 9), no payoff without its trigger. Low weirdness keeps the primary profession as the core (≥ 4 skills on 1–4, ≥ 3 on 5–9) and always uses the primary attribute (≥ 8). On 10 the primary profession may bring only one skill – or none – if the primary attribute still pays off.</p>
@@ -3343,7 +3411,7 @@ const HOWTO = {
       <li><b>Sharing:</b> the address bar always holds the current build. Anyone who opens it sees exactly the same build, whatever their own settings are. Links carry the skill pool, never character names.</li>
       <li><b>Your last build</b> is kept on the start page, so closing the app mid-vanquish loses nothing. Logbook entries are saved the moment you add them.</li>
       <li><b>My characters:</b> Account → My characters imports character_completion.json from GWToolbox++. Your bar then only uses what the chosen character has learned; heroes use what all your characters know.</li></ul>
-    <h3>Points, titles, achievements</h3><p>Base points: mission normal mode 10, hard mode 20, vanquish 40 (hard mode only). × weirdness factor (1 + 0.08 per level above 1) × (1 + 0.25 per effective bravery rule). Failed = 0. Title track: ${rankList()}. 30 achievements are read from your logbook.</p>
+    <h3>Points, titles, achievements</h3><p>Base points: mission normal mode 10, hard mode 20, vanquish 40 (hard mode only). × weirdness factor (1 + 0.08 per level above 1) × (1 + 0.25 per effective bravery rule). Failed = 0. Title track: ${rankList()}. 33 achievements are read from your logbook.</p>
     <h3>Good to know</h3><ul><li>Playability is judged by rules and tags, not by simulation. High weirdness can be tough – that is the point.</li>
       <li>Upgrade names are in English; upgrade details without guarantee. Inscriptions were checked against the Guild Wars Wiki.</li>
       <li>Template codes follow the official format; please report codes that do not load.</li>
@@ -3351,7 +3419,8 @@ const HOWTO = {
       <li>Your skill base (account) limits skills and the places Destiny can pick: no campaign, no missions from it.</li></ul></div>`,
   de: () => `<h2 class="ph">So funktioniert’s</h2><div class="panel prose">
     <h3>Schnellstart</h3><ol><li>Modus auf der Startseite wählen.</li><li>Im Overlay Klasse, Weirdness und Full Bravery einstellen.</li><li>Würfeln, Vorlagencode im Spiel laden (Skill-Fenster → Vorlagen) und spielen.</li><li>Ergebnis eintragen: Mission (Normal/Hard Mode) oder Vanquish, geschafft oder gescheitert – Punkte, Titel und Erfolge folgen.</li></ol>
-    <h3>Modi</h3><ul><li><b>Roll your Destiny</b> – der Würfel wählt Mission oder Vanquish, einen echten Ort aus dem Wiki, dessen Teamgröße, deine Helden und alle Leisten. Du wählst nur deine Klasse.</li>
+    <h3>Modi</h3><ul><li><b>Zaishen Bravery</b> – ein Wurf pro Tag, für alle gleich: Ort, Team, Helden und alle Leisten. Wechsel um 16:00 UTC, immer mit allen Skills und den Standard-Verbindungen, damit du dich mit anderen vergleichen kannst. Weirdness und Bravery richten sich nach dem Wochentag (Mo 4 … Fr 8, Sa 9 + Bravery 1, So 10 + Bravery 2; UTC).</li>
+      <li><b>Roll your Destiny</b> – der Würfel wählt Mission oder Vanquish, einen echten Ort aus dem Wiki, dessen Teamgröße, deine Helden und alle Leisten. Du wählst nur deine Klasse.</li>
       <li><b>Pick 1 of 3</b> – drei Elites deiner Klasse, du wählst einen, die Leiste wächst um ihn herum.</li><li><b>Pick your Signature</b> – jeden Elite suchen, mit deutschem oder englischem Namen.</li>
       <li><b>PvE</b> – Solo-Leiste oder Team aus 4/6/8 mit deinen Helden. <b>PvP 1v1</b> – PvP-Versionen der Skills, keine PvE-only-Skills.</li><li><b>Random</b> – Modus, Größe und Klasse werden gewürfelt.</li></ul>
     <h3>Weirdness 1–10</h3><p>1 bleibt nah an bewährten Mustern, 10 wird maximal schräg – die harten Regeln gelten auf jeder Stufe: ein Elite, höchstens drei Attributlinien plus Primärattribut, Punkte nur in genutzte Linien, Waffe nur mit Waffenattribut (Rang ≥ 9), kein Nutznießer ohne Auslöser. Auf niedriger Stufe bleibt die Primärprofession der Kern (≥ 4 Skills auf 1–4, ≥ 3 auf 5–9) und das Primärattribut wird immer genutzt (≥ 8). Auf 10 darf die Primärprofession nur einen oder gar keinen Skill stellen, wenn sich das Primärattribut trotzdem lohnt.</p>
@@ -3365,7 +3434,7 @@ const HOWTO = {
       <li>Rollen mit Leitplanken: Heiler und Prot nur Mönch oder Ritualist, Tank nur Krieger, Assassine, Paragon oder Derwisch. Ohne Mönch oder Ritualist gibt es eine rote Warnung statt eines Krieger-Heilers.</li>
       <li>Helden bekommen nie PvE-only-Skills (sie nutzen nur auf dem Account freigeschaltete Skills) und meiden Skills, die die Helden-KI laut Wiki nicht sinnvoll einsetzt.</li></ul>
     <h3>Engines und Reibung</h3><p>Jede Leiste wächst um ein bis zwei Mechaniken („Engines“, z. B. Brennen, Siegel zählen, Schattenschritte). Die Auslöser sucht der Generator selbst. Skills, die sich beißen (z. B. Wenig-Leben-Effekte neben Max-Leben-Buffs), werden abgewertet und als Reibung gezeigt. Details in der <a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base</a>.</p>
-    <h3>Punkte, Titel, Erfolge</h3><p>Basis: Mission Normal Mode 10, Hard Mode 20, Vanquish 40 (nur Hard Mode). × Weirdness-Faktor (1 + 0,08 je Stufe über 1) × (1 + 0,25 je wirksamer Bravery-Regel). Gescheitert = 0. Titelspur: ${rankList()}. 30 Erfolge werden aus deinem Logbuch gelesen.</p>
+    <h3>Punkte, Titel, Erfolge</h3><p>Basis: Mission Normal Mode 10, Hard Mode 20, Vanquish 40 (nur Hard Mode). × Weirdness-Faktor (1 + 0,08 je Stufe über 1) × (1 + 0,25 je wirksamer Bravery-Regel). Gescheitert = 0. Titelspur: ${rankList()}. 33 Erfolge werden aus deinem Logbuch gelesen.</p>
     <h3>Gut zu wissen</h3><ul><li>Spielbarkeit wird über Regeln und Tags bewertet, nicht simuliert. Hohe Weirdness kann zäh sein – das ist der Sinn.</li>
       <li>Upgrade-Namen sind englisch, Details ohne Gewähr. Inschriften sind gegen das Guild Wars Wiki geprüft.</li>
       <li>Vorlagencodes folgen dem offiziellen Format; Codes, die nicht laden, bitte melden.</li>
@@ -3423,7 +3492,9 @@ const TX5 = {
     snapOld: 'This link was made with an older version of the generator. Showing the bars exactly as they were saved.',
     snapMod: 'This build was changed after rolling (e.g. a hero re-rolled). Showing the bars exactly as they were saved.',
     snapRegen: 'Roll this seed with the current version', snapNoLog: 'Roll it with the current version to log it.',
-    brave0: 'No rules off – a sensible build.', braveN: '{n} random build rule(s) off – the card shows which. +25 % points for each rule that bites.'},
+    brave0: 'No rules off – a sensible build.', braveN: '{n} random build rule(s) off – the card shows which. +25 % points for each rule that bites.',
+    zaiT: 'Zaishen Bravery', zaiLead: 'One roll a day, the same for everyone.', zaiRoll: 'Roll today', zaiView: 'View roll', zaiIn: 'new roll in {t}',
+    zaiDone: '✓ done today', zaiTried: 'tried today', zaiFixed: 'Zaishen Bravery is the same roll for everyone – no re-roll. Your own rolls are on the start page.'},
   de: {swMine: 'Meine Charaktere', swManual: 'Meine Skill-Basis', swBlank: 'Blanker Start', swImport: 'Charaktere importieren →',
     swHintChars: 'Deine Leiste nutzt nur Skills, die der gewählte Charakter gelernt hat; Helden nutzen alles, was deine Charaktere können.',
     swHintManual: 'Nutzt die Skills, die du im Account angehakt hast.', swHintBlank: 'Alle Skills sind verfügbar – als wäre auf deinem Account alles freigeschaltet.',
@@ -3448,7 +3519,9 @@ const TX5 = {
     snapOld: 'Dieser Link stammt aus einer älteren Version des Generators. Gezeigt werden die Leisten genau so, wie sie gespeichert wurden.',
     snapMod: 'Dieser Build wurde nach dem Würfeln verändert (z. B. ein Held neu gewürfelt). Gezeigt werden die Leisten genau so, wie sie gespeichert wurden.',
     snapRegen: 'Diesen Seed mit der aktuellen Version würfeln', snapNoLog: 'Zum Eintragen ins Logbuch mit der aktuellen Version würfeln.',
-    brave0: 'Keine Regel aus – ein vernünftiger Build.', braveN: '{n} zufällige Bau-Regel(n) aus – welche, steht auf der Karte. +25 % Punkte je Regel, die wirklich greift.'},
+    brave0: 'Keine Regel aus – ein vernünftiger Build.', braveN: '{n} zufällige Bau-Regel(n) aus – welche, steht auf der Karte. +25 % Punkte je Regel, die wirklich greift.',
+    zaiT: 'Zaishen Bravery', zaiLead: 'Ein Wurf pro Tag, für alle gleich.', zaiRoll: 'Heute würfeln', zaiView: 'Wurf ansehen', zaiIn: 'neuer Wurf in {t}',
+    zaiDone: '✓ heute geschafft', zaiTried: 'heute versucht', zaiFixed: 'Zaishen Bravery ist für alle derselbe Wurf – kein Neu-Würfeln. Eigene Würfe gibt es auf der Startseite.'},
 };
 const t5 = k => (TX5[st.lang] || TX5.en)[k] || TX5.en[k] || k;
 
@@ -3529,6 +3602,7 @@ function backupNag() {
   return `<div class="cont nag">${ICON('i-shield')}<span>${esc(t5('nagT').replace('{n}', n))}</span><button class="btn sec" data-nag="1">${esc(t5('nagBtn'))}</button></div>`;
 }
 function hubExtraClick(e) {
+  if (e.target.closest('[data-zai]')) { startZaishen(); return true; }
   const hb = e.target.closest('[data-hb]');
   if (hb) {
     const d = Store.d;
@@ -3586,7 +3660,8 @@ const HELP = {
     chars: 'Experimental: imports character_completion.json from GWToolbox++. Your bar then only uses skills the chosen character has learned; heroes use what all your characters learned together. Built from Toolbox’s file format – tell us if your file does not work.',
     links: 'Connections are the skill pairs the generator treats as synergies: built-in pairs, measured pairs from PvXwiki and your own. Switch groups off or add your own pairs.',
     destiny: 'Experimental: the dice also picks a real mission or vanquish area, its party size and your heroes. Party sizes come from the Guild Wars Wiki; a few are estimated.',
-    pvp: 'Experimental: builds for spontaneous 1v1 duels with PvP skill versions. The least tuned mode so far.'},
+    pvp: 'Experimental: builds for spontaneous 1v1 duels with PvP skill versions. The least tuned mode so far.',
+    zaishen: 'One roll a day for everyone. It changes at 16:00 UTC, together with the Zaishen quests in the game. Always with all skills, so everyone gets the same. Weirdness and Bravery follow the weekday.'},
   de: {
     weird: 'Weirdness 1–10: wie weit der Würfel von bewährten Builds abweichen darf. 1 bleibt nah an bekannten Mustern, 10 wird maximal schräg. Die harten Regeln (ein Elite, Waffe braucht ihr Attribut, jeder Nutznießer hat einen Auslöser …) gelten auf jeder Stufe.',
     brave: 'Full Bravery: Jede Stufe schaltet eine zufällige Bau-Regel ab – z. B. Nah- und Fernkampf mischen, Waffe ohne ihr Attribut oder Energie ignorieren. Die Karte zeigt, welche Regeln aus waren; durchgestrichene haben diesmal nichts geändert. Jede Regel, die greift, gibt +25 % Punkte.',
@@ -3601,7 +3676,8 @@ const HELP = {
     chars: 'Experimentell: importiert character_completion.json aus GWToolbox++. Deine Leiste nutzt dann nur Skills, die der gewählte Charakter gelernt hat; Helden nutzen, was alle deine Charaktere zusammen gelernt haben. Gebaut nach dem Dateiformat von Toolbox – sag Bescheid, wenn deine Datei nicht klappt.',
     links: 'Verbindungen sind die Skill-Paare, die der Generator als Synergie behandelt: mitgelieferte Paare, gemessene Paare aus dem PvXwiki und deine eigenen. Gruppen lassen sich abschalten, eigene Paare hinzufügen.',
     destiny: 'Experimentell: Der Würfel wählt zusätzlich eine echte Mission oder ein Vanquish-Gebiet, dessen Teamgröße und deine Helden. Teamgrößen stammen aus dem Guild Wars Wiki, einige sind geschätzt.',
-    pvp: 'Experimentell: Builds für spontane 1v1-Duelle mit den PvP-Versionen der Skills. Bisher der am wenigsten abgestimmte Modus.'},
+    pvp: 'Experimentell: Builds für spontane 1v1-Duelle mit den PvP-Versionen der Skills. Bisher der am wenigsten abgestimmte Modus.',
+    zaishen: 'Ein Wurf pro Tag für alle. Wechsel um 16:00 UTC, zusammen mit den Zaishen-Quests im Spiel. Immer mit allen Skills, damit alle dasselbe bekommen. Weirdness und Bravery richten sich nach dem Wochentag.'},
 };
 function hlp(k) { return `<button type="button" class="hlp" data-help="${k}" aria-label="${esc(t5('helpAria'))}">?</button>`; }
 function xpBadge() { return `<span class="xp">${esc(t5('xp'))}</span>`; }
@@ -3650,7 +3726,8 @@ function snapHtml(c) {
     return `<div class="snap-m"><div class="snap-h">${who ? `<b>${esc(who)}</b>` : ''}${combo(d.p1, d.p2)}<span>${esc(pname(d.p1))} / ${esc(pname(d.p2) || '–')}</span></div>
       ${miniBar(d.skills)}<div class="snap-a">${attrs}</div><div class="acts"><button class="code" data-copy="${esc(code)}" title="${t('copy')}">${ICON('i-copy')}<span>${esc(code)}</span></button>${hlp('code')}</div></div>`;
   }).join('');
-  return `<article class="card snap"><p class="snap-n">${esc(t5(old ? 'snapOld' : 'snapMod'))}</p>${rows}
+  const zb = c.zaishen ? `<div class="fate zai"><div class="dk">${esc(t5('zaiT'))} · ${esc(zaiInfo(c.zaishen).date)}</div></div>` : '';   // Schnappschuss: nur Datum, der Ort hängt am Code der Version (A4)
+  return `${zb}<article class="card snap"><p class="snap-n">${esc(t5(old ? 'snapOld' : 'snapMod'))}</p>${rows}
     <p class="snap-f"><button class="btn" data-snap="regen">${esc(t5('snapRegen'))}</button> <small>${esc(t5('snapNoLog'))}</small></p></article>`;
 }
 document.addEventListener('click', e => {

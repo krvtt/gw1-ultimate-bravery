@@ -9,7 +9,7 @@ function el(id) {
 }
 const els = {};
 const document = {querySelector: s => els[s] || (els[s] = el(s)), getElementById: id => els['#' + id] || (els['#' + id] = el('#' + id)), activeElement: null, querySelectorAll: () => [], addEventListener() {}, documentElement: {}, body: {appendChild() {}}, createElement: () => el('x')};
-const process_ = 0; const localStorage = {getItem(){return null}, setItem(){}}; const win = {localStorage, Blob: function(){}, URL: {createObjectURL(){return ''}}, confirm(){return true}, document, location: {hash: process.env.H || '#m=pve&s=8&w=9&seed=4242', href: 'x'}, history: {replaceState() {}, pushState() {}}, addEventListener() {}, scrollTo() {}, matchMedia: () => ({matches: false}), innerHeight: 800, innerWidth: 1200, navigator: {}, console, Math, URLSearchParams, setTimeout, clearTimeout, Promise};
+const process_ = 0; const localStorage = {getItem(){return null}, setItem(){}}; const win = {localStorage, Blob: function(){}, URL: {createObjectURL(){return ''}}, confirm(){return true}, document, location: {hash: process.env.H || '#m=pve&s=8&w=9&seed=4242', href: 'x'}, history: {replaceState() {}, pushState() {}}, addEventListener() {}, scrollTo() {}, matchMedia: () => ({matches: false}), innerHeight: 800, innerWidth: 1200, navigator: {}, console, Math, URLSearchParams, setTimeout, clearTimeout, setInterval: () => 0, Date, Promise};
 win.window = win; win.globalThis = win;
 vm.createContext(win);
 const html = fs.readFileSync(__dirname + '/../docs/index.html', 'utf8');
